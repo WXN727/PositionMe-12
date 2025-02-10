@@ -886,7 +886,15 @@ public class SensorFusion implements SensorEventListener, Observer {
                             .setMagX(magneticField[0])
                             .setMagY(magneticField[1])
                             .setMagZ(magneticField[2])
+<<<<<<< HEAD
                             .setRelativeTimestamp(android.os.SystemClock.uptimeMillis()-bootTime));
+=======
+                            .setRelativeTimestamp(SystemClock.uptimeMillis()-bootTime))
+                    .addGnssData(Traj.GNSS_Sample.newBuilder()
+                            .setLatitude(latitude)
+                            .setLongitude(longitude)
+                            .setRelativeTimestamp(SystemClock.uptimeMillis()-bootTime));
+>>>>>>> e0b53b2 (add gnss to file)
 
             // Divide timer with a counter for storing data every 1 second
             if (counter == 99) {
