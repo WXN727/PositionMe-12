@@ -190,6 +190,24 @@ public class ServerCommunications implements Observable {
                         // Print a confirmation of a successful POST to API
                         System.out.println("Successful post response: " + responseBody.string());
 
+<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
+=======
+                        String originalPath = file.getAbsolutePath();
+                        System.out.println("Original trajectory file saved at: " + originalPath);
+
+                        // Copy the file to the Downloads folder
+                        File downloadsDir = android.os.Environment.getExternalStoragePublicDirectory
+                                (android.os.Environment.DIRECTORY_DOWNLOADS);
+                        File downloadFile = new File(downloadsDir, file.getName());
+                        try {
+                            copyFile(file, downloadFile);
+                            System.out.println("Trajectory file copied to Downloads: " + downloadFile.getAbsolutePath());
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            System.err.println("Failed to copy file to Downloads: " + e.getMessage());
+                        }
+
+>>>>>>> 375e2eb (transferred all comments into English and removed strange icons.):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
                         // Delete local file and set success to true
                         success = file.delete();
                         notifyObservers(1);
