@@ -28,7 +28,13 @@
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_icon_map_round"
         android:supportsRtl="true"
+<<<<<<< HEAD
         android:theme="@style/Theme.Cloud">
+=======
+        android:theme="@style/Theme.Material3"
+        android:requestLegacyExternalStorage="true"
+    >
+>>>>>>> 28e5371 (refactor: update UI components to Material Design 3 and enhance functionality across various fragments)
 
         <!--
              TODO: Before you run your application, you need a Google Maps API key.
