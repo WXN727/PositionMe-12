@@ -2,6 +2,10 @@
     <!-- Base theme for the app -->
     <style name="Theme.Material3" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize Material Design 3 properties -->
+<<<<<<< HEAD
+=======
+        <item name="colorControlNormal">@color/md_theme_light_onPrimary</item>
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
         <item name="colorPrimary">@color/md_theme_light_primary</item>
         <item name="colorOnPrimary">@color/md_theme_light_onPrimary</item>
         <item name="colorSecondary">@color/md_theme_light_secondary</item>
@@ -9,10 +13,21 @@
         <item name="android:windowBackground">@color/md_theme_light_background</item>
         <item name="android:statusBarColor">@color/md_theme_light_primary</item>
         <item name="android:navigationBarColor">@color/md_theme_light_surface</item>
+<<<<<<< HEAD
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
     </style>
 
+=======
+        <item name="windowActionBar">@color/md_theme_light_surface</item>
+        <item name="windowNoTitle">true</item>
+    </style>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <item name="colorControlNormal">@color/md_theme_light_onPrimary</item>
+    </style>
+
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
     <!-- Material 3 Typography Definitions -->
     <style name="Material3Typography.TitleLarge" parent="TextAppearance.Material3.TitleLarge">
         <item name="android:textColor">@color/md_theme_light_primary</item>

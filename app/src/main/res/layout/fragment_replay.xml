@@ -12,7 +12,20 @@
         android:layout_height="match_parent"
         tools:context=".MapsActivity" />
 
+<<<<<<< HEAD
     <androidx.constraintlayout.widget.ConstraintLayout
+=======
+
+    <!-- Progress bar or seek bar to show current playback position -->
+    <SeekBar
+        android:id="@+id/playbackSeekBar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="14dp"/>
+
+    <!-- Playback Controls -->
+    <LinearLayout
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:ignore="ExtraText">
@@ -206,6 +219,7 @@
             android:id="@+id/floorUpButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+<<<<<<< HEAD
             android:layout_marginBottom="32dp"
             android:clickable="true"
             android:contentDescription="@string/floor_up_button"
@@ -239,11 +253,16 @@
             android:textColor="@color/black"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/mapSwitchSpinner" />
+=======
+            android:text="Restart"
+            android:layout_margin="2dp" />
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
 
         <Button
             android:id="@+id/lineColorButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+<<<<<<< HEAD
             android:layout_marginStart="192dp"
             android:layout_marginTop="2dp"
             android:background="@drawable/rounded_button_black"
@@ -257,3 +276,26 @@
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>
+=======
+            android:text="Play"
+            android:layout_margin="2dp" />
+
+        <Button
+            android:id="@+id/goEndButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="End"
+            android:layout_margin="2dp" />
+
+        <Button
+            android:id="@+id/exitButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Exit"
+            android:layout_margin="2dp"/>
+    </LinearLayout>
+
+
+
+</LinearLayout>
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))

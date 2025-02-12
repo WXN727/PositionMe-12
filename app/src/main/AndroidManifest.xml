@@ -29,9 +29,13 @@
         android:roundIcon="@mipmap/ic_launcher_icon_map_round"
         android:supportsRtl="true"
 <<<<<<< HEAD
+<<<<<<< HEAD
         android:theme="@style/Theme.Cloud">
 =======
         android:theme="@style/Theme.Material3"
+=======
+        android:theme="@style/Theme.Material3.DayNight.NoActionBar"
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
         android:requestLegacyExternalStorage="true"
     >
 >>>>>>> 28e5371 (refactor: update UI components to Material Design 3 and enhance functionality across various fragments)

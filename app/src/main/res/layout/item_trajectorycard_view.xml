@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
 <<<<<<< HEAD
+<<<<<<< HEAD
         android:layout_margin="8dp"
         app:cardBackgroundColor="@color/pastelBlue"
         app:cardCornerRadius="20dp"
@@ -20,6 +21,8 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 =======
+=======
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
         android:layout_marginStart="8dp"
         android:layout_marginTop="15dp"
         android:layout_marginEnd="8dp"
@@ -27,13 +30,17 @@
         app:cardBackgroundColor="@color/md_theme_primaryContainer"
         app:cardCornerRadius="16dp"
         app:strokeColor="@color/md_theme_outlineVariant">
+<<<<<<< HEAD
 >>>>>>> 28e5371 (refactor: update UI components to Material Design 3 and enhance functionality across various fragments)
+=======
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:padding="12dp">
 
+<<<<<<< HEAD
 <<<<<<< HEAD
             <!-- 轨迹 ID -->
             <TextView
@@ -47,10 +54,23 @@
                 android:text="999"
                 android:textColor="@color/lightLogoBlue"
                 android:textSize="24dp"
+=======
+            <!-- ID TextView with auto-size text -->
+            <TextView
+                android:id="@+id/trajectoryIdItem"
+                android:layout_width="80dp"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:text="99999"
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
                 android:textStyle="bold"
-                app:layout_constraintBottom_toBottomOf="parent"
+                android:textColor="@color/pastelBlue"
+                android:textAppearance="@style/TextAppearance.Material3.DisplaySmall"
+                android:maxLines="1"
+                android:ellipsize="end"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
+<<<<<<< HEAD
                 app:layout_constraintVertical_bias="0.0" />
 
             <!-- 日期 -->
@@ -76,6 +96,15 @@
 
             <!-- Time stamp TextView -->
 >>>>>>> 28e5371 (refactor: update UI components to Material Design 3 and enhance functionality across various fragments)
+=======
+                app:layout_constraintBottom_toBottomOf="parent"
+                android:autoSizeTextType="uniform"
+                android:autoSizeMinTextSize="12sp"
+                android:autoSizeMaxTextSize="65sp"
+                android:autoSizeStepGranularity="2sp" />
+
+            <!-- Time stamp TextView -->
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
             <TextView
                 android:id="@+id/trajectoryDateItem"
                 android:layout_width="0dp"
@@ -83,6 +112,7 @@
                 android:layout_marginStart="8dp"
                 android:layout_marginEnd="8dp"
                 android:text="1998-05-19 05:28:42"
+<<<<<<< HEAD
 <<<<<<< HEAD
                 android:textColor="@color/LightYellow"
                 android:textSize="16dp"
@@ -122,6 +152,12 @@
                 app:layout_constraintStart_toEndOf="@id/trajectoryIdItem"
                 app:layout_constraintTop_toTopOf="parent"
 >>>>>>> 28e5371 (refactor: update UI components to Material Design 3 and enhance functionality across various fragments)
+=======
+                android:textColor="@color/md_theme_onSurface"
+                android:textAppearance="@style/TextAppearance.Material3.BodyLarge"
+                app:layout_constraintStart_toEndOf="@id/trajectoryIdItem"
+                app:layout_constraintTop_toTopOf="parent"
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintEnd_toStartOf="@+id/downloadTrajectoryButton" />
 
@@ -136,10 +172,14 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
 <<<<<<< HEAD
+<<<<<<< HEAD
                 app:srcCompat="@drawable/ic_baseline_download_24" />
 =======
                 app:layout_constraintBottom_toBottomOf="parent" />
 >>>>>>> 28e5371 (refactor: update UI components to Material Design 3 and enhance functionality across various fragments)
+=======
+                app:layout_constraintBottom_toBottomOf="parent" />
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
 </androidx.constraintlayout.widget.ConstraintLayout>

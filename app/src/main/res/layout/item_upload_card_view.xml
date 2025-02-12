@@ -14,7 +14,11 @@
         android:layout_marginTop="15dp"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="5dp"
+<<<<<<< HEAD
         app:cardBackgroundColor="@color/md_theme_primaryContainer"
+=======
+        app:cardBackgroundColor="@color/md_theme_tertiaryContainer"
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
         app:cardCornerRadius="16dp"
         app:strokeColor="@color/md_theme_outlineVariant">
 
@@ -27,9 +31,16 @@
                 android:id="@+id/trajectoryIdItem"
                 android:layout_width="80dp"
                 android:layout_height="wrap_content"
+<<<<<<< HEAD
                 android:gravity="center"
                 android:text="99999"
                 android:textColor="@color/md_theme_onPrimaryContainer"
+=======
+                android:textStyle="bold"
+                android:gravity="center"
+                android:text="99999"
+                android:textColor="@color/pastelBlue"
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
                 android:textAppearance="@style/TextAppearance.Material3.DisplaySmall"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -79,10 +90,14 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
 <<<<<<< HEAD
+<<<<<<< HEAD
                 app:srcCompat="@drawable/ic_baseline_upload_24" />
 =======
                 app:layout_constraintBottom_toBottomOf="parent" />
 >>>>>>> 28e5371 (refactor: update UI components to Material Design 3 and enhance functionality across various fragments)
+=======
+                app:layout_constraintBottom_toBottomOf="parent" />
+>>>>>>> 316d004 (New Feature, UI refurbished (#20))
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </com.google.android.material.card.MaterialCardView>
