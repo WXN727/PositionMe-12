@@ -37,9 +37,9 @@
             android:layout_height="70dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="4dp"
+            android:background="@drawable/rounded_button"
             android:text="@string/stop"
             android:textSize="24sp"
-            android:background="@drawable/rounded_button"
             app:icon="@drawable/ic_baseline_stop_24"
             app:iconGravity="start"
             app:iconSize="30dp"
@@ -252,6 +252,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/mapSwitchSpinner"
             app:layout_constraintTop_toBottomOf="@+id/currentPositionCard" />
+
+        <ImageView
+            android:id="@+id/legendImage"
+            android:layout_width="60dp"
+            android:layout_height="101dp"
+            android:src="@drawable/legend"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.954"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/autoFloor"
+            app:layout_constraintVertical_bias="0.0" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
