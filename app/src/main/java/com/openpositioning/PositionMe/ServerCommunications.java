@@ -4,7 +4,6 @@ import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -38,6 +37,7 @@ import okhttp3.Response;
 import okhttp3.ResponseBody;
 
 <<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
+<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
 =======
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,6 +45,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import com.google.protobuf.InvalidProtocolBufferException;
 >>>>>>> 316d004 (New Feature, UI refurbished (#20)):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
+=======
+>>>>>>> 4272d66 (refactor: streamline permission checks and update UI strings for better localization):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
 /**
  * This class handles communications with the server through HTTPs. The class uses an
  * {@link OkHttpClient} for making requests to the server. The class includes methods for sending

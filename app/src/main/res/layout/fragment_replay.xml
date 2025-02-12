@@ -25,7 +25,11 @@
 
     <!-- Playback Controls -->
     <LinearLayout
+<<<<<<< HEAD
 >>>>>>> 316d004 (New Feature, UI refurbished (#20))
+=======
+        style="?android:attr/buttonBarStyle"
+>>>>>>> 4272d66 (refactor: streamline permission checks and update UI strings for better localization)
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         tools:ignore="ExtraText">
@@ -89,6 +93,7 @@
 
         <Button
             android:id="@+id/restartButton"
+<<<<<<< HEAD
             android:layout_width="150dp"
             android:layout_height="70dp"
             android:layout_marginStart="16dp"
@@ -255,10 +260,17 @@
             app:layout_constraintTop_toBottomOf="@+id/mapSwitchSpinner" />
 =======
             android:text="Restart"
+=======
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/replay_frag_restart"
+>>>>>>> 4272d66 (refactor: streamline permission checks and update UI strings for better localization)
             android:layout_margin="2dp" />
 >>>>>>> 316d004 (New Feature, UI refurbished (#20))
 
         <Button
+<<<<<<< HEAD
             android:id="@+id/lineColorButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -278,20 +290,29 @@
 </FrameLayout>
 =======
             android:text="Play"
+=======
+            android:id="@+id/playPauseButton"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/replay_frag_play"
+>>>>>>> 4272d66 (refactor: streamline permission checks and update UI strings for better localization)
             android:layout_margin="2dp" />
 
         <Button
             android:id="@+id/goEndButton"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="End"
+            android:text="@string/replay_frag_end"
             android:layout_margin="2dp" />
 
         <Button
             android:id="@+id/exitButton"
+            style="?android:attr/buttonBarButtonStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Exit"
+            android:text="@string/replay_frag_exit"
             android:layout_margin="2dp"/>
     </LinearLayout>
 

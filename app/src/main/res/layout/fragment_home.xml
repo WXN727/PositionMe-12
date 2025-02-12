@@ -22,10 +22,14 @@
             android:id="@+id/pageTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+<<<<<<< HEAD
             android:text="Position Me"
 <<<<<<< HEAD
             android:textSize="48sp"
 =======
+=======
+            android:text="@string/position_me"
+>>>>>>> 4272d66 (refactor: streamline permission checks and update UI strings for better localization)
             android:textSize="36sp"
 >>>>>>> 316d004 (New Feature, UI refurbished (#20))
             android:textStyle="bold"
@@ -63,7 +67,7 @@
             android:textColor="@android:color/holo_red_dark"
             android:textSize="16sp"
             android:visibility="gone"
-            android:text="GNSS is disabled"
+            android:text="@string/gnss_disabled"
             app:layout_constraintTop_toBottomOf="@id/sloganText"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -116,7 +120,7 @@
 =======
 
         <!-- Google Map container -->
-        <fragment
+        <androidx.fragment.app.FragmentContainerView
             android:id="@+id/mapFragmentContainer"
             android:name="com.google.android.gms.maps.SupportMapFragment"
             android:layout_width="0dp"
