@@ -11,6 +11,7 @@ import android.widget.SeekBar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -23,7 +24,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fragment that replays trajectory data on a map.
+ * Sub fragment of Replay Activity. Fragment that replays trajectory data on a map.
+ * <p>
+ * The ReplayFragment is responsible for visualizing and replaying trajectory data captured during
+ * previous recordings. It loads trajectory data from a JSON file, updates the map with user movement,
+ * and provides UI controls for playback, pause, and seek functionalities.
+ * <p>
+ * Features:
+ * - Loads trajectory data from a file and displays it on a map.
+ * - Provides playback controls including play, pause, restart, and go to end.
+ * - Updates the trajectory dynamically as playback progresses.
+ * - Allows users to manually seek through the recorded trajectory.
+ * - Integrates with {@link TrajectoryMapFragment} for map visualization.
+ *
+ * @see TrajectoryMapFragment The map fragment displaying the trajectory.
+ * @see ReplayActivity The activity managing the replay workflow.
+ * @see TrajParser Utility class for parsing trajectory data.
+ *
+ * @author Shu Gu
  */
 public class ReplayFragment extends Fragment {
 
@@ -58,6 +76,7 @@ public class ReplayFragment extends Fragment {
             initialLon = getArguments().getFloat(ReplayActivity.EXTRA_INITIAL_LON, 0f);
         }
 
+        // Log the received data
         Log.i(TAG, "ReplayFragment received data:");
         Log.i(TAG, "Trajectory file path: " + filePath);
         Log.i(TAG, "Initial latitude: " + initialLat);
@@ -112,11 +131,20 @@ public class ReplayFragment extends Fragment {
                     .commit();
         }
 
-        // Set initial camera position if valid latitude and longitude are provided
-        if (initialLat != 0f || initialLon != 0f) {
-            LatLng startPoint = new LatLng(initialLat, initialLon);
-            Log.i(TAG, "Setting initial map position: " + startPoint.toString());
-            trajectoryMapFragment.setInitialCameraPosition(startPoint);
+
+
+        // 1) Check if the file contains any GNSS data
+        boolean gnssExists = hasAnyGnssData(replayData);
+
+        if (gnssExists) {
+            showGnssChoiceDialog();
+        } else {
+            // No GNSS data -> automatically use param lat/lon
+            if (initialLat != 0f || initialLon != 0f) {
+                LatLng startPoint = new LatLng(initialLat, initialLon);
+                Log.i(TAG, "Setting initial map position: " + startPoint.toString());
+                trajectoryMapFragment.setInitialCameraPosition(startPoint);
+            }
         }
 
         // Initialize UI controls
@@ -152,6 +180,7 @@ public class ReplayFragment extends Fragment {
             }
         });
 
+        // Restart button listener
         restartButton.setOnClickListener(v -> {
             if (replayData.isEmpty()) return;
             currentIndex = 0;
@@ -160,6 +189,7 @@ public class ReplayFragment extends Fragment {
             updateMapForIndex(0);
         });
 
+        // Go to End button listener
         goEndButton.setOnClickListener(v -> {
             if (replayData.isEmpty()) return;
             currentIndex = replayData.size() - 1;
@@ -170,6 +200,7 @@ public class ReplayFragment extends Fragment {
             playPauseButton.setText("Play");
         });
 
+        // Exit button listener
         exitButton.setOnClickListener(v -> {
             Log.i(TAG, "Exit button pressed. Exiting replay.");
             if (getActivity() instanceof ReplayActivity) {
@@ -179,6 +210,7 @@ public class ReplayFragment extends Fragment {
             }
         });
 
+        // SeekBar listener
         playbackSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -197,6 +229,71 @@ public class ReplayFragment extends Fragment {
         }
     }
 
+
+
+    /**
+     * Checks if any ReplayPoint contains a non-null gnssLocation.
+     */
+    private boolean hasAnyGnssData(List<TrajParser.ReplayPoint> data) {
+        for (TrajParser.ReplayPoint point : data) {
+            if (point.gnssLocation != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    /**
+     * Show a simple dialog asking user to pick:
+     * 1) GNSS from file
+     * 2) Lat/Lon from ReplayActivity arguments
+     */
+    private void showGnssChoiceDialog() {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Choose Starting Location")
+                .setMessage("GNSS data is found in the file. Would you like to use the file's GNSS as the start, or the one you manually picked?")
+                .setPositiveButton("Use File's GNSS", (dialog, which) -> {
+                    LatLng firstGnss = getFirstGnssLocation(replayData);
+                    if (firstGnss != null) {
+                        setupInitialMapPosition((float) firstGnss.latitude, (float) firstGnss.longitude);
+                    } else {
+                        // Fallback if no valid GNSS found
+                        setupInitialMapPosition(initialLat, initialLon);
+                    }
+                    dialog.dismiss();
+                })
+                .setNegativeButton("Use Manual Set", (dialog, which) -> {
+                    setupInitialMapPosition(initialLat, initialLon);
+                    dialog.dismiss();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void setupInitialMapPosition(float latitude, float longitude) {
+        LatLng startPoint = new LatLng(initialLat, initialLon);
+        Log.i(TAG, "Setting initial map position: " + startPoint.toString());
+        trajectoryMapFragment.setInitialCameraPosition(startPoint);
+    }
+
+    /**
+     * Retrieve the first available GNSS location from the replay data.
+     */
+    private LatLng getFirstGnssLocation(List<TrajParser.ReplayPoint> data) {
+        for (TrajParser.ReplayPoint point : data) {
+            if (point.gnssLocation != null) {
+                return new LatLng(replayData.get(0).gnssLocation.latitude, replayData.get(0).gnssLocation.longitude);
+            }
+        }
+        return null; // None found
+    }
+
+
+    /**
+     * Runnable for playback of trajectory data.
+     * This runnable is called repeatedly to update the map with the next point in the replayData list.
+     */
     private final Runnable playbackRunnable = new Runnable() {
         @Override
         public void run() {
@@ -217,6 +314,13 @@ public class ReplayFragment extends Fragment {
         }
     };
 
+
+    /**
+     * Update the map with the user location and GNSS location (if available) for the given index.
+     * Clears the map and redraws up to the given index.
+     *
+     * @param newIndex
+     */
     private void updateMapForIndex(int newIndex) {
         if (newIndex < 0 || newIndex >= replayData.size()) return;
 

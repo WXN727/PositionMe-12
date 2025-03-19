@@ -1,4 +1,4 @@
-package com.openpositioning.PositionMe.viewitems;
+package com.openpositioning.PositionMe.presentation.viewitems;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.openpositioning.PositionMe.R;
+import com.openpositioning.PositionMe.presentation.fragment.UploadFragment;
 
 import java.io.File;
 import java.util.List;
@@ -59,7 +60,7 @@ public class UploadListAdapter extends RecyclerView.Adapter<UploadViewHolder> {
      * {@inheritDoc}
      * Formats and assigns the data fields from the local Trajectory Files object to the TextView fields.
      *
-     * @see com.openpositioning.PositionMe.fragments.UploadFragment finding the data from on local storage.
+     * @see UploadFragment finding the data from on local storage.
      * @see com.openpositioning.PositionMe.R.layout#item_upload_card_view xml layout file.
      */
     @Override

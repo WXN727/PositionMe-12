@@ -1,4 +1,4 @@
-package com.openpositioning.PositionMe;
+package com.openpositioning.PositionMe.utils;
 
 import android.graphics.Color;
 import android.util.Log;
@@ -9,8 +9,8 @@ import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
-import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.openpositioning.PositionMe.R;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,9 +1,23 @@
-package com.openpositioning.PositionMe;
+package com.openpositioning.PositionMe.data.remote;
+import android.util.Log;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.io.BufferedReader;
+import java.io.FileReader;
+import org.json.JSONObject;
+
+import android.os.Environment;
+
+import java.io.FileInputStream;
+import java.io.OutputStream;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
@@ -12,7 +26,10 @@ import androidx.annotation.NonNull;
 import androidx.preference.PreferenceManager;
 
 import com.google.protobuf.util.JsonFormat;
-import com.openpositioning.PositionMe.fragments.FilesFragment;
+import com.openpositioning.PositionMe.BuildConfig;
+import com.openpositioning.PositionMe.Traj;
+import com.openpositioning.PositionMe.presentation.fragment.FilesFragment;
+import com.openpositioning.PositionMe.presentation.activity.MainActivity;
 import com.openpositioning.PositionMe.sensors.Observable;
 import com.openpositioning.PositionMe.sensors.Observer;
 
@@ -22,32 +39,26 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
 import okhttp3.Call;
+import okhttp3.Callback;
 import okhttp3.Headers;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
+import okhttp3.OkHttp;
 import okhttp3.OkHttpClient;
+import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okhttp3.ResponseBody;
 
-<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
-<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
-=======
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import com.google.protobuf.InvalidProtocolBufferException;
->>>>>>> 316d004 (New Feature, UI refurbished (#20)):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
-=======
->>>>>>> 4272d66 (refactor: streamline permission checks and update UI strings for better localization):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
 /**
  * This class handles communications with the server through HTTPs. The class uses an
  * {@link OkHttpClient} for making requests to the server. The class includes methods for sending
@@ -60,19 +71,16 @@ import com.google.protobuf.InvalidProtocolBufferException;
  * @author Mate Stodulka
  */
 public class ServerCommunications implements Observable {
-<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
-
-=======
     public static Map<String, JSONObject> downloadRecords = new HashMap<>();
->>>>>>> 316d004 (New Feature, UI refurbished (#20)):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
     // Application context for handling permissions and devices
     private final Context context;
+
     // Network status checking
     private ConnectivityManager connMgr;
     private boolean isWifiConn;
     private boolean isMobileConn;
     private SharedPreferences settings;
-    private String trajectoryFileName;
+
     private String infoResponse;
     private boolean success;
     private List<Observer> observers;
@@ -125,8 +133,18 @@ public class ServerCommunications implements Observable {
         // Convert the trajectory to byte array
         byte[] binaryTrajectory = trajectory.toByteArray();
 
-        // Get the directory path for storing the file with the trajectory
-        File path = context.getFilesDir();
+        File path = null;
+        // for android 13 or higher use dedicated external storage
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            path = context.getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            if (path == null) {
+                path = context.getFilesDir();
+            }
+        } else { // for android 12 or lower use internal storage
+            path = context.getFilesDir();
+        }
+
+        System.out.println(path.toString());
 
         // Format the file name according to date
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yy-HH-mm-ss");
@@ -162,12 +180,12 @@ public class ServerCommunications implements Observable {
                     .build();
 
             // Create a POST request with the required headers
-            okhttp3.Request request = new okhttp3.Request.Builder().url(uploadURL).post(requestBody)
+            Request request = new Request.Builder().url(uploadURL).post(requestBody)
                     .addHeader("accept", PROTOCOL_ACCEPT_TYPE)
                     .addHeader("Content-Type", PROTOCOL_CONTENT_TYPE).build();
 
             // Enqueue the request to be executed asynchronously and handle the response
-            client.newCall(request).enqueue(new okhttp3.Callback() {
+            client.newCall(request).enqueue(new Callback() {
 
                 // Handle failure to get response from the server
                 @Override public void onFailure(Call call, IOException e) {
@@ -177,6 +195,17 @@ public class ServerCommunications implements Observable {
                     //file.delete();
                     success = false;
                     notifyObservers(1);
+                }
+
+                private void copyFile(File src, File dst) throws IOException {
+                    try (InputStream in = new FileInputStream(src);
+                         OutputStream out = new FileOutputStream(dst)) {
+                        byte[] buf = new byte[1024];
+                        int len;
+                        while ((len = in.read(buf)) > 0) {
+                            out.write(buf, 0, len);
+                        }
+                    }
                 }
 
                 // Process the server's response
@@ -190,7 +219,8 @@ public class ServerCommunications implements Observable {
 
                             String errorBody = responseBody.string();
                             infoResponse = "Upload failed: " + errorBody;
-                            new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, infoResponse, Toast.LENGTH_SHORT).show());//show error message to users
+                            new Handler(Looper.getMainLooper()).post(() ->
+                                    Toast.makeText(context, infoResponse, Toast.LENGTH_SHORT).show()); // show error message to users
 
                             System.err.println("POST error response: " + errorBody);
                             success = false;
@@ -206,14 +236,12 @@ public class ServerCommunications implements Observable {
                         // Print a confirmation of a successful POST to API
                         System.out.println("Successful post response: " + responseBody.string());
 
-<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
-=======
+                        System.out.println("Get file: " + file.getName());
                         String originalPath = file.getAbsolutePath();
                         System.out.println("Original trajectory file saved at: " + originalPath);
 
                         // Copy the file to the Downloads folder
-                        File downloadsDir = android.os.Environment.getExternalStoragePublicDirectory
-                                (android.os.Environment.DIRECTORY_DOWNLOADS);
+                        File downloadsDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
                         File downloadFile = new File(downloadsDir, file.getName());
                         try {
                             copyFile(file, downloadFile);
@@ -223,7 +251,6 @@ public class ServerCommunications implements Observable {
                             System.err.println("Failed to copy file to Downloads: " + e.getMessage());
                         }
 
->>>>>>> 375e2eb (transferred all comments into English and removed strange icons.):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
                         // Delete local file and set success to true
                         success = file.delete();
                         notifyObservers(1);
@@ -238,23 +265,37 @@ public class ServerCommunications implements Observable {
             success = false;
             notifyObservers(1);
         }
-
     }
 
     /**
      * Uploads a local trajectory file to the API server in the specified format.
-     * {@link okhttp3.OkHttp} library is used for the asynchronous POST request.
+     * {@link OkHttp} library is used for the asynchronous POST request.
      *
      * @param localTrajectory the File object of the local trajectory to be uploaded
      */
     public void uploadLocalTrajectory(File localTrajectory) {
+
         // Instantiate client for HTTP requests
         OkHttpClient client = new OkHttpClient();
 
+        // robustness improvement
+        RequestBody fileRequestBody;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            try {
+                byte[] fileBytes = Files.readAllBytes(localTrajectory.toPath());
+                fileRequestBody = RequestBody.create(MediaType.parse("text/plain"), fileBytes);
+            } catch (IOException e) {
+                e.printStackTrace();
+                // if failed, use File object to construct RequestBody
+                fileRequestBody = RequestBody.create(MediaType.parse("text/plain"), localTrajectory);
+            }
+        } else {
+            fileRequestBody = RequestBody.create(MediaType.parse("text/plain"), localTrajectory);
+        }
+
         // Create request body with a file to upload in multipart/form-data format
         RequestBody requestBody = new MultipartBody.Builder().setType(MultipartBody.FORM)
-                .addFormDataPart("file", localTrajectory.getName(),
-                        RequestBody.create(MediaType.parse("text/plain"), localTrajectory))
+                .addFormDataPart("file", localTrajectory.getName(), fileRequestBody)
                 .build();
 
         // Create a POST request with the required headers
@@ -264,7 +305,8 @@ public class ServerCommunications implements Observable {
 
         // Enqueue the request to be executed asynchronously and handle the response
         client.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override public void onFailure(Call call, IOException e) {
+            @Override
+            public void onFailure(Call call, IOException e) {
                 // Print error message, set success to false and notify observers
                 e.printStackTrace();
 //                localTrajectory.delete();
@@ -272,10 +314,12 @@ public class ServerCommunications implements Observable {
                 System.err.println("UPLOAD: Failure to get response");
                 notifyObservers(1);
                 infoResponse = "Upload failed: " + e.getMessage(); // Store error message
-                new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, infoResponse, Toast.LENGTH_SHORT).show());//show error message to users
+                new Handler(Looper.getMainLooper()).post(() ->
+                        Toast.makeText(context, infoResponse, Toast.LENGTH_SHORT).show()); // show error message to users
             }
 
-            @Override public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
                 try (ResponseBody responseBody = response.body()) {
                     if (!response.isSuccessful()) {
                         // Print error message, set success to false and throw an exception
@@ -287,7 +331,8 @@ public class ServerCommunications implements Observable {
                         String errorBody = responseBody.string();
                         System.err.println("UPLOAD unsuccessful: " + errorBody);
                         infoResponse = "Upload failed: " + errorBody;
-                        new Handler(Looper.getMainLooper()).post(() -> Toast.makeText(context, infoResponse, Toast.LENGTH_SHORT).show());
+                        new Handler(Looper.getMainLooper()).post(() ->
+                                Toast.makeText(context, infoResponse, Toast.LENGTH_SHORT).show());
                         throw new IOException("UPLOAD failed with code " + response);
                     }
 
@@ -309,8 +354,10 @@ public class ServerCommunications implements Observable {
         });
     }
 
-<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
-=======
+    /**
+     * Loads download records from a JSON file and updates the downloadRecords map.
+     * If the file exists, it reads the JSON content and populates the map.
+     */
     private void loadDownloadRecords() {
         // Point to the app-specific Downloads folder
         File recordsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
@@ -329,7 +376,7 @@ public class ServerCommunications implements Observable {
                     String key = it.next();
                     try {
                         JSONObject record = jsonObject.getJSONObject(key);
-                        String id = record.getString("id");  // 获取 id 作为新 key
+                        String id = record.getString("id");
                         downloadRecords.put(id, record);
                     } catch (Exception e) {
                         System.err.println("Error loading record with key: " + key);
@@ -347,8 +394,15 @@ public class ServerCommunications implements Observable {
         }
     }
 
-
-
+    /**
+     * Saves a download record to a JSON file.
+     * The method creates or updates the JSON file with the provided details.
+     *
+     * @param startTimestamp the start timestamp of the trajectory
+     * @param fileName the name of the file
+     * @param id the ID of the trajectory
+     * @param dateSubmitted the date the trajectory was submitted
+     */
     private void saveDownloadRecord(long startTimestamp, String fileName, String id, String dateSubmitted) {
         File recordsDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
         File recordsFile = new File(recordsDir, "download_records.json");
@@ -391,7 +445,7 @@ public class ServerCommunications implements Observable {
             recordDetails.put("id", id);
 
             // Insert or update in the main JSON
-            jsonObject.put(id, recordDetails);  // 使用 id 作为 key
+            jsonObject.put(id, recordDetails);
 
             // Write updated JSON to file
             try (FileWriter writer = new FileWriter(recordsFile)) {
@@ -407,10 +461,6 @@ public class ServerCommunications implements Observable {
         }
     }
 
-
-
-
->>>>>>> 316d004 (New Feature, UI refurbished (#20)):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
     /**
      * Perform API request for downloading a Trajectory uploaded to the server. The trajectory is
      * retrieved from a zip file, with the method accepting a position argument specifying the
@@ -418,8 +468,12 @@ public class ServerCommunications implements Observable {
      * then to a JSON string to be downloaded to the device's Downloads folder.
      *
      * @param position the position of the trajectory in the zip file to retrieve
+     * @param id the ID of the trajectory
+     * @param dateSubmitted the date the trajectory was submitted
      */
-    public void downloadTrajectory(int position, DownloadCallback callback) {
+    public void downloadTrajectory(int position, String id, String dateSubmitted) {
+        loadDownloadRecords();  // Load existing records from app-specific directory
+
         // Initialise OkHttp client
         OkHttpClient client = new OkHttpClient();
 
@@ -432,29 +486,25 @@ public class ServerCommunications implements Observable {
 
         // Enqueue the GET request for asynchronous execution
         client.newCall(request).enqueue(new okhttp3.Callback() {
-            @Override public void onFailure(Call call, IOException e) {
+            @Override
+            public void onFailure(Call call, IOException e) {
                 e.printStackTrace();
             }
 
-            @Override public void onResponse(Call call, Response response) throws IOException {
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
                 try (ResponseBody responseBody = response.body()) {
-                    if (!response.isSuccessful()) throw new IOException("Unexpected code "
-                            + response);
+                    if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
 
-                    // Create input streams to process the response
+                    // Extract the nth entry from the zip
                     InputStream inputStream = responseBody.byteStream();
                     ZipInputStream zipInputStream = new ZipInputStream(inputStream);
 
-                    // Get the nth entry in the zip file
                     java.util.zip.ZipEntry zipEntry;
                     int zipCount = 0;
                     while ((zipEntry = zipInputStream.getNextEntry()) != null) {
                         if (zipCount == position) {
                             // break if zip entry position matches the desired position
-<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
-                            trajectoryFileName = String.valueOf(position)+"trajectory_" + zipEntry.getName() + ".txt"; // get file name
-=======
->>>>>>> 316d004 (New Feature, UI refurbished (#20)):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
                             break;
                         }
                         zipCount++;
@@ -469,47 +519,31 @@ public class ServerCommunications implements Observable {
                     while ((bytesRead = zipInputStream.read(buffer)) != -1) {
                         byteArrayOutputStream.write(buffer, 0, bytesRead);
                     }
-<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
-=======
 
->>>>>>> 316d004 (New Feature, UI refurbished (#20)):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
 
-                    // Convert the byte array to a protobuf object
+                    // Convert the byte array to protobuf
                     byte[] byteArray = byteArrayOutputStream.toByteArray();
                     Traj.Trajectory receivedTrajectory = Traj.Trajectory.parseFrom(byteArray);
 
-<<<<<<< HEAD:app/src/main/java/com/openpositioning/PositionMe/ServerCommunications.java
-                    // Convert the protobuf object to a string
-                    JsonFormat.Printer printer = JsonFormat.printer();
-                    String receivedTrajectoryString = printer.print(receivedTrajectory);
-                    System.out.println("Successful download: "
-                            + receivedTrajectoryString.substring(0, 100));
-
-                    // Save the received trajectory to a file in the Downloads folder
-                    String storagePath = Environment.getExternalStoragePublicDirectory(Environment
-                            .DIRECTORY_DOWNLOADS).toString();
-                    //String storagePath = context.getFilesDir().toString();
-
-
-
-                     //trajectoryFileName = "trajectory_" + position + ".txt";
-
-                    File file = new File(storagePath, trajectoryFileName);
-
-=======
                     // Inspect the size of the received trajectory
                     logDataSize(receivedTrajectory);
 
                     // Print a message in the console
                     long startTimestamp = receivedTrajectory.getStartTimestamp();
                     String fileName = "trajectory_" + dateSubmitted + ".txt";
->>>>>>> 316d004 (New Feature, UI refurbished (#20)):app/src/main/java/com/openpositioning/PositionMe/data/remote/ServerCommunications.java
 
+                    // Place the file in your app-specific "Downloads" folder
+                    File appSpecificDownloads = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS);
+                    if (appSpecificDownloads != null && !appSpecificDownloads.exists()) {
+                        appSpecificDownloads.mkdirs();
+                    }
 
+                    File file = new File(appSpecificDownloads, fileName);
                     try (FileWriter fileWriter = new FileWriter(file)) {
+                        String receivedTrajectoryString = JsonFormat.printer().print(receivedTrajectory);
                         fileWriter.write(receivedTrajectoryString);
                         fileWriter.flush();
-                        System.err.println("Received trajectory stored in: " + storagePath);
+                        System.err.println("Received trajectory stored in: " + file.getAbsolutePath());
                     } catch (IOException ee) {
                         System.err.println("Trajectory download failed");
                     } finally {
@@ -520,16 +554,13 @@ public class ServerCommunications implements Observable {
                         inputStream.close();
                     }
 
-                    //return file name
-                    callback.onDownloadCompleted(trajectoryFileName);
+                    // Save the download record
+                    saveDownloadRecord(startTimestamp, fileName, id, dateSubmitted);
+                    loadDownloadRecords();
                 }
             }
         });
 
-    }
-
-    public interface DownloadCallback {
-        void onDownloadCompleted(String fileName);
     }
 
     /**

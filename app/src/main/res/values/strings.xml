@@ -6,11 +6,7 @@
     <string name="stop">Complete</string>
     <string name="start">Start</string>
     <string name="measurements">Live data</string>
-<<<<<<< HEAD
-    <string name="files">History Data</string>
-=======
     <string name="files">History</string>
->>>>>>> 316d004 (New Feature, UI refurbished (#20))
     <string name="info_description">See sensor hardware information</string>
     <string name="refresh_read">Refresh readings</string>
     <string name="download">Download</string>
@@ -128,15 +124,9 @@
     <string name="home_slogan">\"Coordinates Start with Your First Move\"</string>
     <string name="info">Sensor Info</string>
     <string name="fragment_home_slogan">\"Coordinates Start with Your First Move\"</string>
-<<<<<<< HEAD
-    <string name="start_recording">Start Recording</string>
-=======
     <string name="start_recording">Record</string>
     <string name="floor_up">Floor up button</string>
     <string name="floor_down">Floor down button</string>
-<<<<<<< HEAD
->>>>>>> 316d004 (New Feature, UI refurbished (#20))
-=======
     <string name="red_dot_description_text">Recording In Progress</string>
     <string name="correct_your_step">Correct your own avg step length:</string>
     <string name="correct_step_hint">...</string>
@@ -147,6 +137,5 @@
     <string name="replay_frag_play">Play</string>
     <string name="replay_frag_end">End</string>
     <string name="replay_frag_exit">Exit</string>
->>>>>>> 4272d66 (refactor: streamline permission checks and update UI strings for better localization)
-
+    <string name="google_maps_key">AIzaSyDhNWpn9mdeWZsutL7Oe_X1m9n-KSgN7JQ</string>
 </resources>

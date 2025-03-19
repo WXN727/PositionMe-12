@@ -1,4 +1,4 @@
-package com.openpositioning.PositionMe;
+package com.openpositioning.PositionMe.utils;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -8,12 +8,11 @@ import android.graphics.drawable.Drawable;
 import androidx.core.content.ContextCompat;
 
 import com.google.android.gms.maps.model.LatLng;
-
-import kotlin.text.MatchGroup;
+import com.openpositioning.PositionMe.presentation.fragment.RecordingFragment;
 
 /**
  * Class containing utility functions which can used by other classes.
- * @see com.openpositioning.PositionMe.fragments.RecordingFragment Currently used by RecordingFragment
+ * @see RecordingFragment Currently used by RecordingFragment
  */
 public class UtilFunctions {
     // Constant 1degree of latitiude/longitude (in m)

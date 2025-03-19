@@ -1,21 +1,19 @@
-package com.openpositioning.PositionMe.fragments;
+package com.openpositioning.PositionMe.presentation.fragment;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.BitmapDescriptor;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 
 import com.google.android.gms.maps.model.GroundOverlay;
 import com.google.android.gms.maps.model.GroundOverlayOptions;
-import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 
-public class IndoorMapManager {
+public class IndoorMapFragment {
     private GoogleMap mMap;
     private GroundOverlay[] groundOverlays; // GroundOverlay used to store each layer
     private int currentFloor = 0; // Floor by default
 
-    public IndoorMapManager(GoogleMap map, int floorNumber) {
+    public IndoorMapFragment(GoogleMap map, int floorNumber) {
         this.mMap = map; // Pass in Google Maps
         this.groundOverlays = new GroundOverlay[floorNumber]; // Set the number of floors
     }

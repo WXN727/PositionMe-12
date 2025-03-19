@@ -1,10 +1,12 @@
-package com.openpositioning.PositionMe.fragments;
+package com.openpositioning.PositionMe.presentation.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.os.Environment;
+import android.os.Build;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -13,14 +15,16 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.openpositioning.PositionMe.R;
-import com.openpositioning.PositionMe.ServerCommunications;
-import com.openpositioning.PositionMe.viewitems.DownloadClickListener;
-import com.openpositioning.PositionMe.viewitems.UploadListAdapter;
+import com.openpositioning.PositionMe.data.remote.ServerCommunications;
+import com.openpositioning.PositionMe.presentation.viewitems.UploadViewHolder;
+import com.openpositioning.PositionMe.presentation.viewitems.DownloadClickListener;
+import com.openpositioning.PositionMe.presentation.viewitems.UploadListAdapter;
 
 import java.io.File;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 
 /**
  * A simple {@link Fragment} subclass. Displays trajectories that were saved locally because no
@@ -55,13 +59,28 @@ public class UploadFragment extends Fragment {
      * Initialises new Server Communication instance with the context, and finds all the files that
      * match the trajectory naming scheme in local storage.
      */
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Get communication class
         serverCommunications = new ServerCommunications(getActivity());
-        // Load local trajectories
-        localTrajectories = Stream.of(getActivity().getFilesDir().listFiles((file, name) -> name.contains("trajectory_") && name.endsWith(".txt")))
+
+        // Determine the directory to load trajectory files from.
+        File trajectoriesDir = null;
+
+        // for android 13 or higher use dedicated external storage
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            trajectoriesDir = getActivity().getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS);
+            if (trajectoriesDir == null) {
+                trajectoriesDir = getActivity().getFilesDir();
+            }
+        } else { // for android 12 or lower use internal storage
+            trajectoriesDir = getActivity().getFilesDir();
+        }
+
+        localTrajectories = Stream.of(trajectoriesDir.listFiles((file, name) ->
+                        name.contains("trajectory_") && name.endsWith(".txt")))
                 .filter(file -> !file.isDirectory())
                 .collect(Collectors.toList());
     }
@@ -88,7 +107,7 @@ public class UploadFragment extends Fragment {
      * is set up to upload the file when clicked and remove it from local storage.
      *
      * @see UploadListAdapter list adapter for the recycler view.
-     * @see com.openpositioning.PositionMe.viewitems.UploadViewHolder view holder for the recycler view.
+     * @see UploadViewHolder view holder for the recycler view.
      * @see com.openpositioning.PositionMe.R.layout#item_upload_card_view xml view for list elements.
      */
     @Override

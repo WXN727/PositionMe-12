@@ -1,4 +1,4 @@
-package com.openpositioning.PositionMe.fragments;
+package com.openpositioning.PositionMe.presentation.fragment;
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -12,9 +12,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.openpositioning.PositionMe.R;
+import com.openpositioning.PositionMe.presentation.viewitems.SensorInfoViewHolder;
 import com.openpositioning.PositionMe.sensors.SensorFusion;
 import com.openpositioning.PositionMe.sensors.SensorInfo;
-import com.openpositioning.PositionMe.viewitems.SensorInfoListAdapter;
+import com.openpositioning.PositionMe.presentation.viewitems.SensorInfoListAdapter;
 
 import java.util.List;
 
@@ -70,7 +71,7 @@ public class InfoFragment extends Fragment {
      * {@link SensorInfoListAdapter}.
      *
      * @see SensorInfoListAdapter List adapter for the Sensor Info Recycler View.
-     * @see com.openpositioning.PositionMe.viewitems.SensorInfoViewHolder View holder for the Sensor Infor RV.
+     * @see SensorInfoViewHolder View holder for the Sensor Infor RV.
      * @see com.openpositioning.PositionMe.R.layout#item_sensorinfo_card_view
      */
     @Override

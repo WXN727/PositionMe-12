@@ -1,8 +1,7 @@
-package com.openpositioning.PositionMe.viewitems;
+package com.openpositioning.PositionMe.presentation.viewitems;
 
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -10,6 +9,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.openpositioning.PositionMe.R;
+import com.openpositioning.PositionMe.presentation.fragment.UploadFragment;
 
 import java.lang.ref.WeakReference;
 
@@ -36,7 +36,7 @@ public class UploadViewHolder extends RecyclerView.ViewHolder implements View.On
      *
      * @param listener DownloadClickListener to enable acting on clicks on items.
      *
-     * @see com.openpositioning.PositionMe.fragments.UploadFragment locating the data and implementing the
+     * @see UploadFragment locating the data and implementing the
      * listener.
      */
     public UploadViewHolder(@NonNull View itemView, DownloadClickListener listener) {

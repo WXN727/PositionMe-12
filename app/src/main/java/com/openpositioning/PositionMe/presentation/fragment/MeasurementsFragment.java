@@ -1,4 +1,4 @@
-package com.openpositioning.PositionMe.fragments;
+package com.openpositioning.PositionMe.presentation.fragment;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -19,7 +19,7 @@ import com.openpositioning.PositionMe.R;
 import com.openpositioning.PositionMe.sensors.SensorFusion;
 import com.openpositioning.PositionMe.sensors.SensorTypes;
 import com.openpositioning.PositionMe.sensors.Wifi;
-import com.openpositioning.PositionMe.viewitems.WifiListAdapter;
+import com.openpositioning.PositionMe.presentation.viewitems.WifiListAdapter;
 
 import java.util.List;
 import java.util.Map;

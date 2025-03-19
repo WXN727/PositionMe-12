@@ -1,19 +1,20 @@
-package com.openpositioning.PositionMe.fragments;
+package com.openpositioning.PositionMe.utils;
 
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.LatLngBounds;
 import com.openpositioning.PositionMe.R;
+import com.openpositioning.PositionMe.presentation.fragment.IndoorMapFragment;
 
 import java.util.ArrayList;
 
 public class NucleusBuildingManager {
-    private IndoorMapManager indoorMapManager;
+    private IndoorMapFragment indoorMapFragment;
     private ArrayList<LatLng> buildingPolygon;
 
     public NucleusBuildingManager(GoogleMap map) {
         // The nuclear building has 5 floors
-        indoorMapManager = new IndoorMapManager(map, 5);
+        indoorMapFragment = new IndoorMapFragment(map, 5);
 
         // southwest corner
         double N1 = 55.92279;
@@ -31,15 +32,15 @@ public class NucleusBuildingManager {
         buildingPolygon.add(new LatLng(N2, -W1)); // Northwest corner
 
         // Initialize the indoor map of each layer
-        indoorMapManager.addFloor(0, R.drawable.floor_lg, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
-        indoorMapManager.addFloor(1, R.drawable.floor_ug, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
-        indoorMapManager.addFloor(2, R.drawable.floor_1, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
-        indoorMapManager.addFloor(3, R.drawable.floor_2, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
-        indoorMapManager.addFloor(4, R.drawable.floor_3, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
+        indoorMapFragment.addFloor(0, R.drawable.floor_lg, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
+        indoorMapFragment.addFloor(1, R.drawable.floor_ug, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
+        indoorMapFragment.addFloor(2, R.drawable.floor_1, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
+        indoorMapFragment.addFloor(3, R.drawable.floor_2, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
+        indoorMapFragment.addFloor(4, R.drawable.floor_3, new LatLngBounds(buildingPolygon.get(0), buildingPolygon.get(2)));
     }
 
-    public IndoorMapManager getIndoorMapManager() {
-        return indoorMapManager;
+    public IndoorMapFragment getIndoorMapManager() {
+        return indoorMapFragment;
     }
 
     /**

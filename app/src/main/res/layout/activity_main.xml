@@ -6,7 +6,7 @@
     android:theme="@style/Theme.AppCompat.Light.NoActionBar"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".presentation.activity.MainActivity">
 
     <!-- Material Toolbar for App Bar -->
     <com.google.android.material.appbar.MaterialToolbar
