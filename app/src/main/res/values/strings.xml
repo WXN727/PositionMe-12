@@ -137,6 +137,8 @@
     <string name="replay_frag_end">End</string>
     <string name="replay_frag_exit">Exit</string>
 
+    <!-- Maps Key -->
+
     <string name="google_maps_key">AIzaSyDhNWpn9mdeWZsutL7Oe_X1m9n-KSgN7JQ</string>
 
 </resources>
