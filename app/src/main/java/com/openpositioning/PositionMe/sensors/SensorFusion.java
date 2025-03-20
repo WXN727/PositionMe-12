@@ -178,7 +178,26 @@ public class SensorFusion implements SensorEventListener, Observer {
         // GNSS initial Long-Lat array
         this.startLocation = new float[2];
     }
-
+//    public void notifySensorUpdate(SensorFusionUpdates.update_type type){
+//        for (SensorFusionUpdates observer : recordingUpdates) {
+//            switch (type) {
+//                case PDR_UPDATE:
+//                    observer.onPDRUpdate();
+//                    break;
+//                case ORIENTATION_UPDATE:
+//                    observer.onOrientationUpdate();
+//                    break;
+//                case GNSS_UPDATE:
+//                    observer.onGNSSUpdate();
+//                    break;
+//                case FUSED_UPDATE:
+//                    observer.onFusedUpdate(fusedPosition);
+//                    break;
+//                case WIFI_UPDATE:
+//                    observer.onWifiUpdate(positionWifi);
+//            }
+//        }
+//    }
 
     /**
      * Static function to access singleton instance of SensorFusion.
@@ -330,6 +349,9 @@ public class SensorFusion implements SensorEventListener, Observer {
                 float[] rotationVectorDCM = new float[9];
                 SensorManager.getRotationMatrixFromVector(rotationVectorDCM,this.rotation);
                 SensorManager.getOrientation(rotationVectorDCM, this.orientation);
+//                notifySensorUpdate(SensorFusionUpdates.update_type.ORIENTATION_UPDATE);
+//                this.turnDetector.ProcessOrientationData(this.orientation[0]);
+
                 break;
 
             case Sensor.TYPE_STEP_DETECTOR:

@@ -334,4 +334,20 @@ public class WifiDataProcessor implements Observable {
         }
         return currentWifi;
     }
+
+//    // 在处理WiFi定位结果的方法中添加位置更新
+//    private void processWifiPositioningResult(/* 参数 */) {
+//        // ... 现有代码 ...
+//
+//        // 假设已经有WiFi定位计算出的位置
+//        double x = /* WiFi定位估计的x坐标 */;
+//        double y = /* WiFi定位估计的y坐标 */;
+//
+//        // 更新ViewModel
+//        if (locationViewModel != null) {
+//            locationViewModel.updateWifiLocation(x, y);
+//        }
+//
+//        // ... 现有代码继续处理 ...
+//    }
 }
