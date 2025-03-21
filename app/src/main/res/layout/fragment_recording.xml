@@ -18,6 +18,32 @@
         tools:ignore="ExtraText">
 
         <Switch
+            android:id="@+id/gnssSwitch"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rounded_corner_pastel_blue"
+            android:buttonTint="@android:color/holo_green_dark"
+            android:text="@string/gnssSwitch"
+            android:textColor="@color/black"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/mapSwitchSpinner" />
+
+        <Switch
+            android:id="@+id/Wifiswitch"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/rounded_corner_pastel_blue"
+            android:buttonTint="@android:color/holo_green_dark"
+            android:text="@string/wifiSwitch"
+            android:textColor="@color/black"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/gnssSwitch" />
+
+        <Switch
             android:id="@+id/autoFloor"
             android:layout_width="wrap_content"
             android:layout_height="48dp"
@@ -36,9 +62,9 @@
             android:layout_height="70dp"
             android:layout_marginEnd="16dp"
             android:layout_marginBottom="4dp"
+            android:background="@drawable/rounded_button"
             android:text="@string/stop"
             android:textSize="24sp"
-            android:background="@drawable/rounded_button"
             app:icon="@drawable/ic_baseline_stop_24"
             app:iconGravity="start"
             app:iconSize="30dp"
@@ -51,9 +77,9 @@
             android:layout_height="70dp"
             android:layout_marginStart="16dp"
             android:layout_marginBottom="4dp"
+            android:background="@drawable/rounded_button"
             android:text="@string/cancel"
             android:textSize="16sp"
-            android:background="@drawable/rounded_button"
             app:icon="@drawable/ic_baseline_cancel_24"
             app:iconGravity="start"
             app:iconSize="28dp"
@@ -202,28 +228,15 @@
             app:layout_constraintHorizontal_bias="0.954"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <Switch
-            android:id="@+id/gnssSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
-            android:background="@drawable/rounded_corner_pastel_blue"
-            android:buttonTint="@android:color/holo_green_dark"
-            android:text="@string/gnssSwitch"
-            android:textColor="@color/black"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/mapSwitchSpinner" />
-
         <Button
             android:id="@+id/lineColorButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="244dp"
             android:layout_marginTop="2dp"
-            android:text="@string/color"
             android:background="@drawable/rounded_button_black"
             android:backgroundTint="@color/black"
+            android:text="@string/color"
             app:layout_constraintStart_toEndOf="@+id/mapSwitchSpinner"
             app:layout_constraintTop_toBottomOf="@+id/currentPositionCard" />
 

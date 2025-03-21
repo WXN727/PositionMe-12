@@ -11,7 +11,7 @@ import android.location.LocationListener;
 import android.os.Build;
 import android.os.PowerManager;
 import android.util.Log;
-
+import com.openpositioning.PositionMe.utils.JsonConverter;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.gms.maps.model.LatLng;
@@ -69,6 +69,7 @@ public class SensorFusion implements SensorEventListener, Observer {
     private static final String WIFI_FINGERPRINT= "wf";
     //endregion
 
+    private List<SensorFusionUpdates> recordingUpdates = new ArrayList<>();
     //region Instance variables
     // Keep device awake while recording
     private PowerManager.WakeLock wakeLock;
@@ -145,6 +146,86 @@ public class SensorFusion implements SensorEventListener, Observer {
     // WiFi positioning object
     private WiFiPositioning wiFiPositioning;
 
+
+    @Override
+    public void update(Object[] responseList) {
+        if (saveRecording) {
+            if (responseList == null || responseList[0] == null){
+                updateFusionWifi(null);  // 暂时不用
+            }
+            JSONObject wifiResponse = (JSONObject) responseList[0];
+            updateFusionWifi(wifiResponse); // 你会在这处理 lat, lon, floor
+        }
+    }
+    @Override
+    public void updateWifi(Object[] wifiList) {
+        // Save newest wifi values to local variable
+        this.wifiList = Stream.of(wifiList).map(o -> (Wifi) o).collect(Collectors.toList());
+        if(this.saveRecording) {
+            Traj.WiFi_Sample.Builder wifiData = Traj.WiFi_Sample.newBuilder()
+                    .setRelativeTimestamp(android.os.SystemClock.uptimeMillis()-bootTime);
+            for(Wifi data : this.wifiList) {
+                wifiData.addMacScans(Traj.Mac_Scan.newBuilder()
+                        .setRelativeTimestamp(android.os.SystemClock.uptimeMillis() - bootTime)
+                        .setMac(data.getBssid()).setRssi(data.getLevel()));
+            }
+            this.trajectory.addWifiData(wifiData);
+
+            //Construct the wifi fingerprint to send to the server
+            try {
+                JSONObject jsonFingerprint = JsonConverter.toJson(this.wifiList);
+                String jsonString = jsonFingerprint.toString();
+                Log.d("WIFI JSON: ", jsonString);
+                sendWifiJsonToCloud(jsonFingerprint);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    public void sendWifiJsonToCloud(JSONObject fingerprint) {
+        // Pass object to communications object
+        this.serverCommunications.sendWifi(fingerprint);
+    }
+
+    public void notifySensorUpdate(SensorFusionUpdates.update_type type, LatLng wifiPosition){
+        for (SensorFusionUpdates observer : recordingUpdates) {
+            if (type == SensorFusionUpdates.update_type.WIFI_UPDATE) {
+                observer.onWifiUpdate(wifiPosition);  // ✅ 回调中传 WiFi 位置
+            }
+        }
+    }
+
+
+
+    public interface SensorFusionUpdates {
+        enum update_type {
+            PDR_UPDATE, ORIENTATION_UPDATE, GNSS_UPDATE, FUSED_UPDATE, WIFI_UPDATE
+        }
+
+        default void onWifiUpdate(LatLng wifiPosition) {}
+    }
+
+
+
+    public void updateFusionWifi(JSONObject wifiResponse){
+        try {
+            if (wifiResponse == null){
+                notifySensorUpdate(SensorFusionUpdates.update_type.WIFI_UPDATE, null);
+                return;
+            }
+
+            double latitude = wifiResponse.getDouble("lat");
+            double longitude = wifiResponse.getDouble("lon");
+            double floor = wifiResponse.getDouble("floor");
+
+            LatLng wifiLatLng = new LatLng(latitude, longitude);
+            // 通知 Fragment 显示 WiFi Marker
+            notifySensorUpdate(SensorFusionUpdates.update_type.WIFI_UPDATE, wifiLatLng);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
     //region Initialisation
     /**
      * Private constructor for implementing singleton design pattern for SensorFusion.
@@ -268,7 +349,15 @@ public class SensorFusion implements SensorEventListener, Observer {
                 "MyApp::MyWakelockTag");
     }
     //endregion
+    public void registerForSensorUpdates(SensorFusionUpdates observer) {
+        if (!recordingUpdates.contains(observer)) {
+            recordingUpdates.add(observer);
+        }
+    }
 
+    public void removeSensorUpdate(SensorFusionUpdates observer) {
+        recordingUpdates.remove(observer);
+    }
     //region Sensor processing
     /**
      * {@inheritDoc}
@@ -413,24 +502,6 @@ public class SensorFusion implements SensorEventListener, Observer {
      *
      * @see WifiDataProcessor object for wifi scanning.
      */
-    @Override
-    public void update(Object[] wifiList) {
-        // Save newest wifi values to local variable
-        this.wifiList = Stream.of(wifiList).map(o -> (Wifi) o).collect(Collectors.toList());
-
-        if(this.saveRecording) {
-            Traj.WiFi_Sample.Builder wifiData = Traj.WiFi_Sample.newBuilder()
-                    .setRelativeTimestamp(android.os.SystemClock.uptimeMillis()-bootTime);
-            for (Wifi data : this.wifiList) {
-                wifiData.addMacScans(Traj.Mac_Scan.newBuilder()
-                        .setRelativeTimestamp(android.os.SystemClock.uptimeMillis() - bootTime)
-                        .setMac(data.getBssid()).setRssi(data.getLevel()));
-            }
-            // Adding WiFi data to Trajectory
-            this.trajectory.addWifiData(wifiData);
-        }
-        createWifiPositioningRequest();
-    }
 
     /**
      * Function to create a request to obtain a wifi location for the obtained wifi fingerprint

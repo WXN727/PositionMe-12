@@ -66,12 +66,10 @@ public class WifiDataProcessor implements Observable {
      * wifi is enabled and enables wifi scans every 5seconds. It also informs the user to disable
      * wifi throttling if the device implements it.
      *
-     * @param context           Application Context to be used for permissions and device accesses.
-     *
-     * @see SensorFusion the intended parent class.
-     *
+     * @param context Application Context to be used for permissions and device accesses.
      * @author Virginia Cangelosi
      * @author Mate Stodulka
+     * @see SensorFusion the intended parent class.
      */
     public WifiDataProcessor(Context context) {
         this.context = context;
@@ -81,12 +79,12 @@ public class WifiDataProcessor implements Observable {
         this.scanWifiDataTimer = new Timer();
         this.observers = new ArrayList<>();
         // Turn on wifi if it is currently disabled
-        if(permissionsGranted && wifiManager.getWifiState()== WifiManager.WIFI_STATE_DISABLED) {
+        if (permissionsGranted && wifiManager.getWifiState() == WifiManager.WIFI_STATE_DISABLED) {
             wifiManager.setWifiEnabled(true);
         }
 
         // Start wifi scan and return results via broadcast
-        if(permissionsGranted) {
+        if (permissionsGranted) {
             this.scanWifiDataTimer.scheduleAtFixedRate(new scheduledWifiScan(), 0, scanInterval);
         }
 
@@ -126,7 +124,7 @@ public class WifiDataProcessor implements Observable {
 
             //Loop though each item in wifi list
             wifiData = new Wifi[wifiScanList.size()];
-            for(int i = 0; i < wifiScanList.size(); i++) {
+            for (int i = 0; i < wifiScanList.size(); i++) {
                 wifiData[i] = new Wifi();
                 //Convert String mac address to an integer
                 String wifiMacAddress = wifiScanList.get(i).BSSID;
@@ -145,33 +143,30 @@ public class WifiDataProcessor implements Observable {
      * Converts mac address from string to integer.
      * Removes semicolons from mac address and converts each hex byte to a hex integer.
      *
-     *
-     * @param wifiMacAddress        String Mac Address received from WifiManager containing colons
-     *
-     * @return                      Long variable with decimal conversion of the mac address
+     * @param wifiMacAddress String Mac Address received from WifiManager containing colons
+     * @return Long variable with decimal conversion of the mac address
      */
-    private long convertBssidToLong(String wifiMacAddress){
-        long intMacAddress =0;
-        int colonCount =5;
+    private long convertBssidToLong(String wifiMacAddress) {
+        long intMacAddress = 0;
+        int colonCount = 5;
         //Loop through each character
-        for(int j =0; j<17; j++){
+        for (int j = 0; j < 17; j++) {
             //Identify character
             char macByte = wifiMacAddress.charAt(j);
             //convert string hex mac address with colons to decimal long integer
-            if(macByte != ':'){
+            if (macByte != ':') {
                 //For characters 0-9 subtract 48 from ASCII code and multiply by 16^position
-                if((int) macByte >= 48 && (int) macByte <= 57){
-                    intMacAddress = intMacAddress + (((int)macByte-48)*((long)Math.pow(16,16-j-colonCount)));
+                if ((int) macByte >= 48 && (int) macByte <= 57) {
+                    intMacAddress = intMacAddress + (((int) macByte - 48) * ((long) Math.pow(16, 16 - j - colonCount)));
                 }
 
                 //For characters a-f subtract 87 (=97-10) from ASCII code and multiply by 16^index
-                else if ((int) macByte >= 97 && (int) macByte <= 102){
-                    intMacAddress = intMacAddress + (((int)macByte-87)*((long)Math.pow(16,16-j-colonCount)));
+                else if ((int) macByte >= 97 && (int) macByte <= 102) {
+                    intMacAddress = intMacAddress + (((int) macByte - 87) * ((long) Math.pow(16, 16 - j - colonCount)));
                 }
-            }
-            else
+            } else
                 //coloncount is used to obtain the index of each character
-                colonCount --;
+                colonCount--;
         }
 
         return intMacAddress;
@@ -182,7 +177,7 @@ public class WifiDataProcessor implements Observable {
      * Explicit user permissions must be granted for android sdk version 23 and above. This
      * function checks which permissions are granted, and returns their conjunction.
      *
-     * @return  boolean true if all permissions are granted for wifi access, false otherwise.
+     * @return boolean true if all permissions are granted for wifi access, false otherwise.
      */
     private boolean checkWifiPermissions() {
         if (Build.VERSION.SDK_INT >= 23) {
@@ -201,8 +196,7 @@ public class WifiDataProcessor implements Observable {
                     wifiChangePermission == PackageManager.PERMISSION_GRANTED &&
                     coarseLocationPermission == PackageManager.PERMISSION_GRANTED &&
                     fineLocationPermission == PackageManager.PERMISSION_GRANTED;
-        }
-        else {
+        } else {
             // Permissions are granted by default
             return true;
         }
@@ -215,7 +209,7 @@ public class WifiDataProcessor implements Observable {
      */
     private void startWifiScan() {
         //Check settings for wifi permissions
-        if(checkWifiPermissions()) {
+        if (checkWifiPermissions()) {
             //if(sharedPreferences.getBoolean("wifi", false)) {
             //Register broadcast receiver for wifi scans
             context.registerReceiver(wifiScanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
@@ -244,16 +238,22 @@ public class WifiDataProcessor implements Observable {
         this.scanWifiDataTimer.cancel();
     }
 
+
+//    @Override
+//    public void unRegisterObserver(Observer o) {
+//        observers.remove(o);
+//    }
+
     /**
      * Inform user if throttling is resent on their device.
      * If the device supports wifi throttling check if it is enabled and instruct the user to
      * disable it.
      */
-    public void checkWifiThrottling(){
-        if(checkWifiPermissions()) {
+    public void checkWifiThrottling() {
+        if (checkWifiPermissions()) {
             //If the device does not support wifi throttling an exception is thrown
             try {
-                if(Settings.Global.getInt(context.getContentResolver(), "wifi_scan_throttle_enabled")==1) {
+                if (Settings.Global.getInt(context.getContentResolver(), "wifi_scan_throttle_enabled") == 1) {
                     //Inform user to disable wifi throttling
                     Toast.makeText(context, "Disable Wi-Fi Throttling", Toast.LENGTH_SHORT).show();
                 }
@@ -266,7 +266,7 @@ public class WifiDataProcessor implements Observable {
     /**
      * Implement default method from Observable Interface to add new observers to the class.
      *
-     * @param o     Classes which implement the Observer interface to receive updates from the class.
+     * @param o Classes which implement the Observer interface to receive updates from the class.
      */
     @Override
     public void registerObserver(Observer o) {
@@ -276,18 +276,19 @@ public class WifiDataProcessor implements Observable {
     /**
      * Implement default method from Observable Interface to add notify observers to the class.
      * Changes to the wifiData variable are passed to observers of the class.
-     * @param idx     Unused.
+     *
+     * @param idx Unused.
      */
     @Override
     public void notifyObservers(int idx) {
-        for(Observer o : observers) {
-            o.update(wifiData);
+        for (Observer o : observers) {
+            o.updateWifi(wifiData);
         }
     }
 
     /**
      * Class to schedule wifi scans.
-     *
+     * <p>
      * Implements default method in {@link TimerTask} class which it implements. It begins to start
      * calling wifi scans every 5 seconds.
      */
@@ -301,14 +302,14 @@ public class WifiDataProcessor implements Observable {
 
     /**
      * Obtains required information about wifi in which the device is currently connected.
-     *
+     * <p>
      * A connectivity manager is used to obtain information about the current network. If the device
      * is connected to a network its ssid, mac address and frequency is stored to a Wifi object so
      * that it can be accessed by the caller of the method
      *
      * @return wifi object containing the currently connected wifi's ssid, mac address and frequency
      */
-    public Wifi getCurrentWifiData(){
+    public Wifi getCurrentWifiData() {
         //Set up a connectivity manager to get information about the wifi
         ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService
                 (Context.CONNECTIVITY_SERVICE);
@@ -318,15 +319,14 @@ public class WifiDataProcessor implements Observable {
         //Only obtain wifi data if the device is connected
         //Wifi in which the device is currently connected to
         Wifi currentWifi = new Wifi();
-        if(networkInfo.isConnected()) {
+        if (networkInfo.isConnected()) {
             //Store the ssid, mac address and frequency of the current wifi
             currentWifi.setSsid(wifiManager.getConnectionInfo().getSSID());
             String wifiMacAddress = wifiManager.getConnectionInfo().getBSSID();
             long intMacAddress = convertBssidToLong(wifiMacAddress);
             currentWifi.setBssid(intMacAddress);
             currentWifi.setFrequency(wifiManager.getConnectionInfo().getFrequency());
-        }
-        else{
+        } else {
             //Store standard information if not connected
             currentWifi.setSsid("Not connected");
             currentWifi.setBssid(0);
@@ -334,20 +334,5 @@ public class WifiDataProcessor implements Observable {
         }
         return currentWifi;
     }
-
-//    // 在处理WiFi定位结果的方法中添加位置更新
-//    private void processWifiPositioningResult(/* 参数 */) {
-//        // ... 现有代码 ...
-//
-//        // 假设已经有WiFi定位计算出的位置
-//        double x = /* WiFi定位估计的x坐标 */;
-//        double y = /* WiFi定位估计的y坐标 */;
-//
-//        // 更新ViewModel
-//        if (locationViewModel != null) {
-//            locationViewModel.updateWifiLocation(x, y);
-//        }
-//
-//        // ... 现有代码继续处理 ...
-//    }
 }
+

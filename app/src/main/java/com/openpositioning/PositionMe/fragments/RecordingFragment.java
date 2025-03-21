@@ -70,8 +70,9 @@ import java.util.List;
  * @author Mate Stodulka
  * @author Arun Gopalakrishnan
  */
-public class RecordingFragment extends Fragment {
+public class RecordingFragment extends Fragment implements SensorFusion.SensorFusionUpdates {
     private Marker gnssMarker;
+
     private List<Marker> gnssMarkers = new ArrayList<>();
     private Marker wifiMarker;
     private List<Marker> wifiMarkers = new ArrayList<>();
@@ -125,6 +126,7 @@ public class RecordingFragment extends Fragment {
     public FloatingActionButton floorDownButton;
     // GNSS Switch
     private Switch gnss;
+    private Switch wifi;
     // GNSS marker
 
     // Button used to switch colour
@@ -152,7 +154,30 @@ public class RecordingFragment extends Fragment {
         settings = PreferenceManager.getDefaultSharedPreferences(context);
         refreshDataHandler = new Handler();
     }
+    //Wifi update from sensor fusion
 
+    @Override
+    public void onWifiUpdate(LatLng latlngFromWifiServer){
+        requireActivity().runOnUiThread(() -> {
+            if (latlngFromWifiServer == null) {
+                // 隐藏 WiFi Marker（如果有）
+                if (wifiMarker != null) {
+                    wifiMarker.remove();
+                    wifiMarker = null;
+                }
+                return;
+            }
+            // 显示 WiFi Marker
+            if (gMap != null) {
+//                if (wifiMarker != null) wifiMarker.remove(); // 移除旧的
+                wifiMarker = gMap.addMarker(new MarkerOptions()
+                        .position(latlngFromWifiServer)
+                        .title("WiFi Location")
+                        .icon(BitmapDescriptorFactory.fromBitmap(
+                                UtilFunctions.getBitmapFromVector(getContext(), R.drawable.blue_hollow_circle))));
+            }
+        });
+    }
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -265,6 +290,19 @@ public class RecordingFragment extends Fragment {
                         gnssMarker = null;
                     }
                     gnssError.setVisibility(View.GONE);
+                }
+            }
+        });
+        wifi = getView().findViewById(R.id.Wifiswitch);
+        wifi.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (!isChecked) {
+                    if (wifiMarker != null) {
+                        wifiMarker.remove();
+                        wifiMarker = null;
+                    }
+
                 }
             }
         });
