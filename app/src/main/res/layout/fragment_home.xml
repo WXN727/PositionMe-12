@@ -31,22 +31,18 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHeight_percent="0.25"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/appName"
-
-            />
+            app:layout_constraintTop_toBottomOf="@id/appName" />
 
         <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/sensorInfoButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
             android:layout_marginEnd="16dp"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="16dp"
             android:contentDescription="@string/info_description"
             app:backgroundTint="?attr/colorPrimary"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/otherButtonLayout"
             app:srcCompat="@drawable/ic_baseline_info_24"
             app:tint="@color/white" />
 
@@ -55,7 +51,7 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="244dp"
             android:layout_height="202dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="80dp"
             android:text="@string/start"
             android:textStyle="bold"
             app:icon="@drawable/ic_baseline_directions_walk_24"
@@ -65,14 +61,13 @@
             app:layout_constraintHorizontal_bias="0.497"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/homeImage"
-            app:layout_constraintWidth_percent="0.5"
-            app:cornerRadius="50dp"/>
+            app:layout_constraintWidth_percent="0.5" />
 
         <LinearLayout
             android:id="@+id/otherButtonLayout"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="16dp"
             android:gravity="center"
             android:orientation="horizontal"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -87,11 +82,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/measurements"
-                android:textSize="16sp"
                 app:icon="@drawable/ic_baseline_data_array_24"
                 app:iconGravity="textTop"
                 app:iconSize="72dp"
-                app:cornerRadius="50dp"></com.google.android.material.button.MaterialButton>
+            android:textSize="16sp"
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/filesButton"
@@ -100,11 +94,10 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="@string/files"
-                android:textSize="16sp"
                 app:icon="@drawable/ic_baseline_folder_24"
                 app:iconGravity="textTop"
                 app:iconSize="72dp"
-                app:cornerRadius="50dp"></com.google.android.material.button.MaterialButton>
+            android:textSize="16sp"
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
