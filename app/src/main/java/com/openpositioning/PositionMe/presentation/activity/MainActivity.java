@@ -127,12 +127,13 @@ public class MainActivity extends AppCompatActivity implements Observer {
                     if (locationGranted && activityGranted) {
                         // Both permissions granted
                         allPermissionsObtained();
-                    } else {
-                        // Permission denied
-                        Toast.makeText(this,
-                                "Location or Physical Activity permission denied. Some features may not work.",
-                                Toast.LENGTH_LONG).show();
                     }
+//                    else {
+//                        // Permission denied
+//                        Toast.makeText(this,
+//                                "Location or Physical Activity permission denied. Some features may not work.",
+//                                Toast.LENGTH_LONG).show();
+//                    }
                 }
         );
 

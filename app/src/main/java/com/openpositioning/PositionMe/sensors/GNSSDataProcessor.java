@@ -58,9 +58,9 @@ public class GNSSDataProcessor {
         if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
             Toast.makeText(context, "Open GPS", Toast.LENGTH_SHORT).show();
         }
-        if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
-            Toast.makeText(context, "Enable Cellular", Toast.LENGTH_SHORT).show();
-        }
+//        if (!locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)) {
+//            Toast.makeText(context, "Enable Cellular", Toast.LENGTH_SHORT).show();
+//        }
         // Start location updates
         if (permissionsGranted) {
             startLocationUpdates();
@@ -109,9 +109,9 @@ public class GNSSDataProcessor {
         else if(permissionGranted && !locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)){
             Toast.makeText(context, "Open GPS", Toast.LENGTH_LONG).show();
         }
-        else if(permissionGranted && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
-            Toast.makeText(context, "Turn on WiFi", Toast.LENGTH_LONG).show();
-        }
+//        else if(permissionGranted && !locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER)){
+//            Toast.makeText(context, "Turn on WiFi", Toast.LENGTH_LONG).show();
+//        }
     }
 
     /**
