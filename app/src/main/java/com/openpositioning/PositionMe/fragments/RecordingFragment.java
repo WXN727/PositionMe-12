@@ -170,6 +170,7 @@ public class RecordingFragment extends Fragment implements SensorFusion.SensorFu
 
     @Override
     public void onWifiUpdate(LatLng latlngFromWifiServer){
+        Log.d("RecordingFragment", "Drawing WiFi Marker at:: " + latlngFromWifiServer);
         getActivity().runOnUiThread(() -> {
             if (latlngFromWifiServer == null) {
                 // Hide WiFi Marker
@@ -181,14 +182,14 @@ public class RecordingFragment extends Fragment implements SensorFusion.SensorFu
             }
             // WiFi Marker
             if (gMap != null) {
-//                if (wifiMarker != null) wifiMarker.remove();
+                if (wifiMarker != null) wifiMarker.remove();
                 if (wifi.isChecked()) {
                     wifiMarker = gMap.addMarker(new MarkerOptions()
                             .position(latlngFromWifiServer)
                             .title("WiFi Location")
                             .icon(BitmapDescriptorFactory.fromBitmap(
                                     UtilFunctions.getBitmapFromVector(getContext(), R.drawable.blue_hollow_circle))));
-                }
+               }
 
             }
         });
@@ -251,6 +252,7 @@ public class RecordingFragment extends Fragment implements SensorFusion.SensorFu
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
         View rootView = inflater.inflate(R.layout.fragment_recording, container, false);
+        SensorFusion.getInstance().registerForSensorUpdates(this);
         // Inflate the layout for this fragment
         ((AppCompatActivity)getActivity()).getSupportActionBar().hide();
         getActivity().setTitle("Recording...");

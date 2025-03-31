@@ -57,6 +57,7 @@ import com.openpositioning.PositionMe.sensors.Wifi;
  */
 public class MainActivity extends AppCompatActivity implements Observer {
 
+
     //region Static variables
     // Static IDs for permission responses.
     private static final int REQUEST_ID_WIFI_PERMISSION = 99;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements Observer {
     private SharedPreferences settings;
     private SensorFusion sensorFusion;
     private Handler httpResponseHandler;
+    private ServerCommunications serverCommunications;
 
     //endregion
 
@@ -141,7 +143,16 @@ public class MainActivity extends AppCompatActivity implements Observer {
             sensorFusion.stopListening();
         }
     }
-
+    @Override
+    public void updateServer(Object[] objList) {
+        assert objList[0] instanceof Boolean;
+        if((Boolean) objList[0]) {
+            this.httpResponseHandler.post(displayToastTaskSuccess);
+        }
+        else {
+            this.httpResponseHandler.post(displayToastTaskFailure);
+        }
+    }
     /**
      * {@inheritDoc}
      * Checks for activities in case the app was closed without granting them, or if they were
@@ -490,6 +501,8 @@ public class MainActivity extends AppCompatActivity implements Observer {
      */
     private void allPermissionsObtained() {
         settings.edit().putBoolean("permanentDeny", false).apply();
+        this.serverCommunications = ServerCommunications.getMainInstance(getApplicationContext());
+        this.serverCommunications.registerObserver(this);
         this.sensorFusion = SensorFusion.getInstance();
         this.sensorFusion.setContext(getApplicationContext());
         sensorFusion.registerForServerUpdate(this);

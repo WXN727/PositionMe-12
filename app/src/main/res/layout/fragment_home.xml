@@ -85,7 +85,7 @@
                 app:icon="@drawable/ic_baseline_data_array_24"
                 app:iconGravity="textTop"
                 app:iconSize="72dp"
-            android:textSize="16sp"
+                android:textSize="16sp"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/filesButton"
@@ -97,7 +97,7 @@
                 app:icon="@drawable/ic_baseline_folder_24"
                 app:iconGravity="textTop"
                 app:iconSize="72dp"
-            android:textSize="16sp"
+                android:textSize="16sp"/>
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
