@@ -54,20 +54,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * A simple {@link Fragment} subclass. The recording fragment is displayed while the app is actively
- * saving data, with UI elements and a map with a marker indicating current PDR location and
- * direction of movement status. The user's PDR trajectory/path being recorded
- * is drawn on the map as well.
- * An overlay of indoor maps for the building is achieved when the user is in the Nucleus
- * and Library buildings to allow for a better user experience.
+ * This fragment handles the active data recording session by capturing sensor inputs,
+ * displaying a real-time map with markers for the current pedestrian dead reckoning (PDR)
+ * position and orientation, and drawing the evolving user trajectory on the map.
+ * It also overlays indoor floor plans when the user is within supported buildings,
+ * thereby enhancing navigation accuracy in indoor environments.
  *
- * @see HomeFragment the previous fragment in the nav graph.
- * @see CorrectionFragment the next fragment in the nav graph.
- * @see SensorFusion the class containing sensors and recording.
- * @see IndoorMapManager responsible for overlaying the indoor floor maps
+ * In this updated version, additional functionalities have been introduced:
+ * <ul>
+ *   <li>Enhanced fusion support for integrating WiFi, GNSS, and PDR data.</li>
+ *   <li>New tagging functionality to mark specific positions during recording.</li>
+ *   <li>Improved UI controls for switching map types and adjusting floor overlays.</li>
+ * </ul>
  *
- * @author Mate Stodulka
- * @author Arun Gopalakrishnan
+ * These improvements provide a more robust framework for post-processing and correcting
+ * the recorded trajectory.
+ *
+ * @see HomeFragment for navigation from the home screen.
+ * @see CorrectionFragment for reviewing and adjusting recorded data.
+ * @see SensorFusion for the sensor integration and fusion algorithms.
+ * @see IndoorMapManager for managing indoor map overlays.
+ *  addtage for the new location tagging functionality.
+ *
  */
 public class RecordingFragment extends Fragment implements SensorFusion.SensorFusionUpdates {
     private Marker gnssMarker;

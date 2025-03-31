@@ -41,36 +41,37 @@ import com.openpositioning.PositionMe.Fusion.ParticleFilter;
 import com.openpositioning.PositionMe.Fusion.BatchOptimizer;
 
 /**
- * A simplified example of a SensorFusion class that integrates an fusionAlgorithm for
- * fusing GNSS, WiFi, and PDR data. Marked lines show where the EKF is initialized and updated.
+ * SensorFusion is a simplified class that integrates sensor data from GNSS, WiFi, and PDR
+ * using a chosen fusion algorithm (e.g., EKF, Particle Filter, or Batch Optimizer). It gathers
+ * sensor data, fuses the information to estimate the user's position, records the trajectory,
+ * and communicates with a remote server to upload sensor and WiFi fingerprint data. The class
+ * also notifies registered UI observers about updates (e.g., fused position, WiFi positioning results).
+ *
+ * Note: This class follows the Singleton pattern.
  */
 public class SensorFusion implements SensorEventListener, Observer {
 
-    //-----------------------------
-    // 1) 静态常量与单例
-    //-----------------------------
+    // 1) Static constants and singleton instance
     private static final SensorFusion sensorFusion = new SensorFusion();
-    // 每隔10ms存一次数据
+    // Save sensor data every 10ms
     private static final long TIME_CONST = 10;
-    // 低通滤波相关常量
-    private LatLng positionWifi;
+    // Low-pass filter coefficient and alpha value for sensor filtering
     public static final float FILTER_COEFFICIENT = 0.96f;
     private static final float ALPHA = 0.8f;
+    private LatLng positionWifi;
     private LatLng fusedPosition;
-    // 用于生成 WiFi 指纹 JSON 的Key
+    // Key used for constructing WiFi fingerprint JSON
     private static final String WIFI_FINGERPRINT = "wf";
 
-    // 观测者接口（通知UI等）
+    // List of observers to notify UI updates
     private List<SensorFusionUpdates> recordingUpdates = new ArrayList<>();
 
-    //-----------------------------
-    // 2) 成员变量
-    //-----------------------------
+    // 2) Member variables for context, sensors, and settings
     private PowerManager.WakeLock wakeLock;
     private SharedPreferences settings;
     private Context context;
 
-    // 各种传感器
+    // Sensor objects
     private MovementSensor accelerometerSensor;
     private MovementSensor barometerSensor;
     private MovementSensor gyroscopeSensor;
@@ -82,27 +83,27 @@ public class SensorFusion implements SensorEventListener, Observer {
     private MovementSensor gravitySensor;
     private MovementSensor linearAccelerationSensor;
     private double[] startRef;
-    // WiFi / GNSS 数据
+    // Processors for WiFi and GNSS data
     private WifiDataProcessor wifiProcessor;
     private GNSSDataProcessor gnssProcessor;
     private final LocationListener locationListener;
 
-    // Server 通信
+    // Server communication
     private ServerCommunications serverCommunications;
-    // 存储所有轨迹数据的 Traj
+    // Trajectory builder for storing all recorded data
     private Traj.Trajectory.Builder trajectory;
 
-    // 录制控制
+    // Recording control and timing variables
     private boolean saveRecording;
     private float filter_coefficient;
     private long absoluteStartTime;
     private long bootTime;
-    // 用于按固定频率写数据
+    // Timer for periodic storage of sensor data
     private Timer storeTrajectoryTimer;
     private int counter;
     private int secondCounter;
     private double[] ecefRefCoords;
-    // IMU 原始值
+    // Raw sensor values
     private float[] acceleration;
     private float[] filteredAcc;
     private float[] gravity;
@@ -114,38 +115,33 @@ public class SensorFusion implements SensorEventListener, Observer {
     private float light;
     private float proximity;
     private float[] R;
-    private int stepCounter ;
+    private int stepCounter;
 
-    // Derived & computed
+    // Derived and computed values
     private float elevation;
     private boolean elevator;
 
-    // GNSS 位置
+    // GNSS values
     private double latitude;
     private double longitude;
-    private double altitude; // optional
+    private double altitude; // optional altitude value
     private float[] startLocation;
 
-    // WiFi 扫描列表
+    // WiFi scan list
     private List<Wifi> wifiList;
-    // 用于统计步行过程的加速度
+    // List to collect acceleration magnitudes for PDR processing
     private List<Double> accelMagnitude;
-    // PDR 处理类
+    // PDR processing object
     private PdrProcessing pdrProcessing;
-    // 负责绘制路径
+    // PathView for drawing the trajectory on the map
     private PathView pathView;
-    // WiFi 定位
+    // WiFi positioning processor
     private WiFiPositioning wiFiPositioning;
 
-    // (★EKF集成处) 扩展卡尔曼滤波器
+    // Fusion algorithm instance (EKF, PF, Batch Optimizer, etc.)
     private FusionAlgorithm fusionAlgorithm;
 
-    // 控制是否开启融合
-    //private boolean enableEKF = true;
-
-    //-----------------------------
-    // 3) 单例 & 构造
-    //-----------------------------
+    // 3) Singleton constructor
     private SensorFusion() {
         this.locationListener = new myLocationListener();
         this.storeTrajectoryTimer = new Timer();
@@ -155,7 +151,7 @@ public class SensorFusion implements SensorEventListener, Observer {
         this.elevation = 0;
         this.elevator = false;
         this.startLocation = new float[2];
-        // 初始化IMU数组
+        // Initialize sensor value arrays
         this.acceleration = new float[3];
         this.filteredAcc = new float[3];
         this.gravity = new float[3];
@@ -172,13 +168,11 @@ public class SensorFusion implements SensorEventListener, Observer {
         return sensorFusion;
     }
 
-    //-----------------------------
-    // 4) setContext 初始化
-    //-----------------------------
+    // 4) setContext: Initializes sensors, data processors, server communication, and settings.
     public void setContext(Context context) {
         this.context = context;
 
-        // 传感器注册
+        // Register sensors
         this.accelerometerSensor = new MovementSensor(context, Sensor.TYPE_ACCELEROMETER);
         this.barometerSensor = new MovementSensor(context, Sensor.TYPE_PRESSURE);
         this.gyroscopeSensor = new MovementSensor(context, Sensor.TYPE_GYROSCOPE);
@@ -190,46 +184,47 @@ public class SensorFusion implements SensorEventListener, Observer {
         this.gravitySensor = new MovementSensor(context, Sensor.TYPE_GRAVITY);
         this.linearAccelerationSensor = new MovementSensor(context, Sensor.TYPE_LINEAR_ACCELERATION);
 
-        // WiFi & GNSS
+        // Initialize WiFi and GNSS processors
         this.wifiProcessor = new WifiDataProcessor(context);
         wifiProcessor.registerObserver(this);
         this.gnssProcessor = new GNSSDataProcessor(context, locationListener);
 
-        // Server
+        // Initialize server communication and register as an observer
         this.serverCommunications = ServerCommunications.getMainInstance();
         this.serverCommunications.registerObserver(this);
 
-        // 时间
+        // Initialize time and recording flags
         this.absoluteStartTime = System.currentTimeMillis();
         this.bootTime = SystemClock.uptimeMillis();
         this.saveRecording = false;
 
-        // PDR
+        // Initialize PDR processing
         this.pdrProcessing = new PdrProcessing(context);
 
-        // Setting
+        // Load settings
         this.settings = PreferenceManager.getDefaultSharedPreferences(context);
 
-        // UI
+        // Initialize UI-related objects
         this.pathView = new PathView(context, null);
         this.wiFiPositioning = new WiFiPositioning(context);
 
-        if(settings.getBoolean("overwrite_constants", false)) {
+        // Use custom filter coefficient if set in preferences; otherwise, use default
+        if (settings.getBoolean("overwrite_constants", false)) {
             this.filter_coefficient = Float.parseFloat(settings.getString("accel_filter", "0.96"));
         } else {
             this.filter_coefficient = FILTER_COEFFICIENT;
         }
 
-        // 保持屏幕唤醒
+        // Acquire a wake lock to keep the device active during recording
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         this.wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyApp::MyWakelockTag");
     }
-        public float passOrientation(){
+
+    public float passOrientation() {
         return orientation[0];
     }
-    //-----------------------------
-    // 5) 传感器回调
-    //-----------------------------
+
+    // 5) Sensor event callback: processes data from various sensors and triggers updates.
     @Override
     public void onSensorChanged(SensorEvent event) {
         switch(event.sensor.getType()) {
@@ -239,7 +234,7 @@ public class SensorFusion implements SensorEventListener, Observer {
                 acceleration[2] = event.values[2];
                 break;
             case Sensor.TYPE_PRESSURE:
-                pressure = (1 - ALPHA)*pressure + ALPHA*event.values[0];
+                pressure = (1 - ALPHA) * pressure + ALPHA * event.values[0];
                 if (saveRecording) {
                     this.elevation = pdrProcessing.updateElevation(
                             SensorManager.getAltitude(SensorManager.PRESSURE_STANDARD_ATMOSPHERE, pressure));
@@ -254,9 +249,9 @@ public class SensorFusion implements SensorEventListener, Observer {
                 filteredAcc[0] = event.values[0];
                 filteredAcc[1] = event.values[1];
                 filteredAcc[2] = event.values[2];
-                double accMag = Math.sqrt(acceleration[0]*acceleration[0]
-                        + acceleration[1]*acceleration[1]
-                        + acceleration[2]*acceleration[2]);
+                double accMag = Math.sqrt(acceleration[0]*acceleration[0] +
+                        acceleration[1]*acceleration[1] +
+                        acceleration[2]*acceleration[2]);
                 accelMagnitude.add(accMag);
                 elevator = pdrProcessing.estimateElevator(gravity, filteredAcc);
                 break;
@@ -284,24 +279,16 @@ public class SensorFusion implements SensorEventListener, Observer {
                 SensorManager.getOrientation(rotationDCM, orientation);
                 break;
             case Sensor.TYPE_STEP_DETECTOR:
-                // PDR 步骤
                 long stepTime = SystemClock.uptimeMillis() - bootTime;
                 float[] pdrCords = pdrProcessing.updatePdr(stepTime, accelMagnitude, orientation[0]);
                 accelMagnitude.clear();
-
                 if (saveRecording) {
                     stepCounter++;
-                    // 记录到 Traj
                     trajectory.addPdrData(Traj.Pdr_Sample.newBuilder()
                             .setRelativeTimestamp(SystemClock.uptimeMillis() - bootTime)
                             .setX(pdrCords[0])
                             .setY(pdrCords[1]));
-
-                    // 在地图上画线
-                    this.pathView.drawTrajectory(pdrCords);
-
-
-                    // 触发一次Fusion逻辑
+                    pathView.drawTrajectory(pdrCords);
                     updateFusionPDR();
                 }
                 break;
@@ -309,19 +296,15 @@ public class SensorFusion implements SensorEventListener, Observer {
     }
 
     /**
-     * GNSS回调listener
+     * GNSS location listener that receives updates and triggers fusion updates.
      */
     class myLocationListener implements LocationListener {
         @Override
         public void onLocationChanged(Location location) {
             if (location != null) {
                 if (startRef == null) {
-                    setStartRefFromGNSS(
-                            location.getLatitude(),
-                            location.getLongitude(),
-                            location.getAltitude()
-                    );}
-
+                    setStartRefFromGNSS(location.getLatitude(), location.getLongitude(), location.getAltitude());
+                }
                 latitude = location.getLatitude();
                 longitude = location.getLongitude();
                 altitude = location.getAltitude();
@@ -332,68 +315,72 @@ public class SensorFusion implements SensorEventListener, Observer {
                             .setAltitude((float) altitude)
                             .setLatitude((float) latitude)
                             .setLongitude((float) longitude)
-                            .setRelativeTimestamp(System.currentTimeMillis() - absoluteStartTime)
-                    );
-                    // (★EKF集成处) GNSS update
+                            .setRelativeTimestamp(System.currentTimeMillis() - absoluteStartTime));
                     updateFusionGNSS(latitude, longitude, altitude);
                 }
             }
         }
-
     }
+
+    /**
+     * Helper method to debug local WiFi scan results by printing each AP's BSSID and RSSI.
+     */
     private void debugLocalWifiScan(List<Wifi> wifiList) {
         if (wifiList == null || wifiList.isEmpty()) {
-            Log.d("SensorFusion", "WiFi Debug: 未获取到任何 WiFi 扫描结果，wifiList 为空。");
+            Log.d("SensorFusion", "WiFi Debug: No WiFi scan results; wifiList is empty.");
             return;
         }
-        // 遍历所有扫描结果并打印 BSSID 和 RSSI
         for (Wifi wifi : wifiList) {
-            Log.d("SensorFusion",
-                    "WiFi Debug: 本地扫描到的 AP -> BSSID: " + wifi.getBssid()
-                            + ", RSSI: " + wifi.getLevel());
+            Log.d("SensorFusion", "WiFi Debug: Detected AP -> BSSID: " + wifi.getBssid() +
+                    ", RSSI: " + wifi.getLevel());
         }
     }
-    public double[] getEcefRefCoords(){
+
+    public double[] getEcefRefCoords() {
         return ecefRefCoords;
     }
+
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
+    /**
+     * Sets the starting reference coordinates based on GNSS data and computes the ECEF reference.
+     */
     public void setStartRefFromGNSS(double lat, double lon, double alt) {
         this.startRef = new double[]{lat, lon, alt};
         this.ecefRefCoords = CoordinateTransform.geodeticToEcef(lat, lon, alt);
     }
 
+    /**
+     * Returns an array containing the current or starting GNSS coordinates (lat, lon, alt).
+     * If 'start' is true, returns the initial reference coordinates.
+     */
     public double[] getGNSSLatLngAlt(boolean start) {
-        double [] latLongAlt = new double[3];
-        if(!start) {
+        double[] latLongAlt = new double[3];
+        if (!start) {
             latLongAlt[0] = latitude;
             latLongAlt[1] = longitude;
             latLongAlt[2] = altitude;
-        }
-        else{
+        } else {
             latLongAlt = startRef;
         }
         return latLongAlt;
     }
-    //-----------------------------
-    // 6) WiFi / Server Observables
-    //-----------------------------
+
+    // 6) WiFi and Server Observables
+
     @Override
     public void update(Object[] responseList) {
-        // WifiDataProcessor那边给的回调
         if (!saveRecording) return;
-
         if (responseList == null || responseList.length == 0 || responseList[0] == null) {
             updateFusionWifi(null);
             return;
         }
         Object first = responseList[0];
         if (first instanceof JSONObject) {
-            // 如果 WifiDataProcessor 直接给你 JSON
             updateFusionWifi((JSONObject) first);
         } else if (first instanceof Wifi) {
-            Log.e("SensorFusion", "Received single Wifi object, route to updateWifi()");
+            Log.e("SensorFusion", "Received single Wifi object, routing to updateWifi()");
             updateWifi(new Object[]{ first });
         }
     }
@@ -404,18 +391,15 @@ public class SensorFusion implements SensorEventListener, Observer {
         debugLocalWifiScan(this.wifiList);
         if (saveRecording) {
             Traj.WiFi_Sample.Builder wifiData = Traj.WiFi_Sample.newBuilder()
-                    .setRelativeTimestamp(SystemClock.uptimeMillis()-bootTime);
+                    .setRelativeTimestamp(SystemClock.uptimeMillis() - bootTime);
             for (Wifi w : this.wifiList) {
                 Log.d("SensorFusion", "BSSID: " + w.getBssid() + ", RSSI: " + w.getLevel());
                 wifiData.addMacScans(Traj.Mac_Scan.newBuilder()
-                        .setRelativeTimestamp(SystemClock.uptimeMillis()-bootTime)
+                        .setRelativeTimestamp(SystemClock.uptimeMillis() - bootTime)
                         .setMac(w.getBssid())
-                        .setRssi(w.getLevel())
-                );
+                        .setRssi(w.getLevel()));
             }
             trajectory.addWifiData(wifiData);
-
-            // 发送到服务器
             try {
                 JSONObject wifiJSON = JsonConverter.toJson(this.wifiList);
                 Log.d("SensorFusion", "Sending WiFi JSON: " + wifiJSON.toString());
@@ -425,22 +409,21 @@ public class SensorFusion implements SensorEventListener, Observer {
             }
         }
     }
+
     public float[] getGNSSLatitude(boolean start) {
-        float [] latLong = new float[2];
-        if(!start) {
+        float[] latLong = new float[2];
+        if (!start) {
             latLong[0] = (float) latitude;
             latLong[1] = (float) longitude;
-        }
-        else{
+        } else {
             latLong = startLocation;
         }
         return latLong;
     }
-    //-----------------------------
-    // 7) EKF 融合(★)
-    //-----------------------------
+
+    // 7) Fusion Integration (e.g., EKF)
     /**
-     * 初始化EKF(或其他融合算法)
+     * Initializes the fusion algorithm (EKF, PF, or Batch) based on user settings.
      */
     public void initialiseFusionAlgorithm() {
         String fusionMethod = settings.getString("fusion_method", "EKF");
@@ -455,111 +438,95 @@ public class SensorFusion implements SensorEventListener, Observer {
                 fusionAlgorithm = new BatchOptimizer();
                 break;
             default:
-                fusionAlgorithm = new EKF(); // fallback
+                fusionAlgorithm = new EKF();
         }
     }
 
-    public void redrawPath(float scalingRatio){
+    public void redrawPath(float scalingRatio) {
         pathView.redraw(scalingRatio);
     }
 
     /**
-     * 当 WiFi 定位结果到来时调用
+     * Called when a WiFi positioning result is received from the server.
      */
     @Override
     public void updateServer(Object[] responseList) {
-        //update fusion processing with new wifi fingerprint
         if (saveRecording) {
-            if (responseList == null || responseList[0] == null){
+            if (responseList == null || responseList[0] == null) {
                 updateFusionWifi(null);
             }
             JSONObject wifiResponse = (JSONObject) responseList[0];
             updateFusionWifi(wifiResponse);
         }
     }
-    public void notifyWifiUpdate(LatLng wifiPosition) {
-        this.positionWifi = wifiPosition; // 可选：更新内部状态
 
+    public void notifyWifiUpdate(LatLng wifiPosition) {
+        this.positionWifi = wifiPosition;
         for (SensorFusionUpdates observer : recordingUpdates) {
             observer.onWifiUpdate(wifiPosition);
         }
     }
+
     /**
-     * 调试服务器返回的 WiFi JSON 数据，主要检查 lat、lon 等字段
+     * Debugs and processes the WiFi JSON received from the server.
      */
     private void debugWifiResponse(JSONObject wifiResponse) {
         if (wifiResponse == null) {
-            Log.d("SensorFusion", "WiFi Debug: 服务器返回数据 wifiResponse 为 null，无法进行 WiFi 定位。");
+            Log.d("SensorFusion", "WiFi Debug: Server response is null; unable to determine WiFi location.");
             return;
         }
-        Log.d("SensorFusion", "WiFi Debug: 收到服务器 WiFi JSON = " + wifiResponse.toString());
-        // 检查 lat / lon / floor 等关键字段是否存在
+        Log.d("SensorFusion", "WiFi Debug: Received server WiFi JSON = " + wifiResponse.toString());
         if (!wifiResponse.has("lat") || !wifiResponse.has("lon")) {
-            Log.d("SensorFusion",
-                    "WiFi Debug: wifiResponse 缺少 lat 或 lon 字段，" +
-                            "完整数据: " + wifiResponse.toString());
+            Log.d("SensorFusion", "WiFi Debug: Server response missing 'lat' or 'lon': " + wifiResponse.toString());
         } else {
             try {
                 double lat = wifiResponse.getDouble("lat");
                 double lon = wifiResponse.getDouble("lon");
-                Log.d("SensorFusion",
-                        "WiFi Debug: 服务器返回的 WiFi 坐标 -> lat: " + lat + ", lon: " + lon);
+                Log.d("SensorFusion", "WiFi Debug: Server returned WiFi coordinates -> lat: " + lat + ", lon: " + lon);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
     }
-    public void updateFusionWifi(JSONObject wifiResponse) {
-        // 调试输出
-        debugWifiResponse(wifiResponse);
 
+    public void updateFusionWifi(JSONObject wifiResponse) {
+        debugWifiResponse(wifiResponse);
         if (wifiResponse == null) {
             notifyWifiUpdate(null);
             return;
         }
-
         if (!wifiResponse.has("lat") || !wifiResponse.has("lon")) {
             Log.e("SensorFusion", "Invalid WiFi response (missing lat/lon), skipping fusion update.");
             notifyWifiUpdate(null);
             return;
         }
-
         try {
             double lat = wifiResponse.getDouble("lat");
             double lon = wifiResponse.getDouble("lon");
             double floor = wifiResponse.getDouble("floor");
-
             LatLng wifiLatLng = new LatLng(lat, lon);
-            // 通知UI
             notifyWifiUpdate(wifiLatLng);
-
-            // 然后调用融合算法
             if (fusionAlgorithm != null) {
-                // 做一些座标转换...
                 double[] enu = CoordinateTransform.geodeticToEnu(
                         lat, lon, 0,
-                        startLocation[0], // 你的起点
+                        startLocation[0],
                         startLocation[1],
-                        0
-                );
+                        0);
                 fusionAlgorithm.onOpportunisticUpdate(enu[0], enu[1], false, SystemClock.uptimeMillis());
             }
-
         } catch (JSONException e) {
             e.printStackTrace();
             notifyWifiUpdate(null);
         }
-
-        // 融合后, 继续读取融合状态, 通知UI
         double[] fusedState = fusionAlgorithm.getState();
         LatLng fusedCoordinate = CoordinateTransform.enuToGeodetic(
                 fusedState[1], fusedState[2], 0,
-                startRef[0], startRef[1], startRef[2]
-        );
+                startRef[0], startRef[1], startRef[2]);
         notifyFusedUpdate(fusedCoordinate);
     }
+
     /**
-     * 当 GNSS 数据到来时调用
+     * Called when GNSS data is received to update the fusion process.
      */
     public void updateFusionGNSS(double lat, double lon, double alt) {
         if (fusionAlgorithm != null) {
@@ -567,99 +534,78 @@ public class SensorFusion implements SensorEventListener, Observer {
                     lat, lon, alt,
                     startLocation[0],
                     startLocation[1],
-                    0
-            );
+                    0);
             fusionAlgorithm.onOpportunisticUpdate(enu[0], enu[1], true, SystemClock.uptimeMillis());
-            double[] fusedState = fusionAlgorithm.getState(); // e.g. [bearing, x, y]
-
+            double[] fusedState = fusionAlgorithm.getState();
             if (startRef == null || startRef.length < 3) {
                 Log.e("SensorFusion", "updateFusionGNSS: startRef is null or incomplete. Skipping GNSS fusion update.");
                 return;
             }
-
-            // 3) 把 x, y 转回 lat, lng
             LatLng fusedCoordinate = CoordinateTransform.enuToGeodetic(
                     fusedState[1], fusedState[2], 0,
-                    startRef[0], startRef[1], startRef[2]
-            );
-
-            // 最后通知 UI 更新
+                    startRef[0], startRef[1], startRef[2]);
             notifyFusedUpdate(fusedCoordinate);
         }
     }
-    public void notifyFusedUpdate(LatLng fused_pos){
+
+    public void notifyFusedUpdate(LatLng fused_pos) {
         fusedPosition = fused_pos;
         for (SensorFusionUpdates observer : recordingUpdates) {
             observer.onFusedUpdate(fused_pos);
         }
     }
+
     public float getElevation() {
         return this.elevation;
     }
-    public double[] getCurrentPDRCalc(){
+
+    public double[] getCurrentPDRCalc() {
         return pdrProcessing.getAccPDRMovement();
     }
 
     /**
-     * 当 PDR 产生后, 尝试在EKF中做 onStepDetected 或者 additional update
+     * Processes a new PDR measurement to update the EKF fusion.
      */
-    public void updateFusionPDR(){
-
+    public void updateFusionPDR() {
         double[] pdrValues = getCurrentPDRCalc();
         float elevationVal = getElevation();
-
-        // local PDR LatLn point
         if (startRef == null || ecefRefCoords == null) {
             Log.e("SensorFusion", "startRef or ecefRefCoords is null — skipping fusion update.");
             return;
         }
-
-        LatLng positionPDR = CoordinateTransform.enuToGeodetic(pdrValues[0], pdrValues[1], elevationVal, startRef[0], startRef[1], ecefRefCoords);
+        LatLng positionPDR = CoordinateTransform.enuToGeodetic(
+                pdrValues[0], pdrValues[1], elevationVal,
+                startRef[0], startRef[1], ecefRefCoords);
         double latitude = positionPDR.latitude;
         double longitude = positionPDR.longitude;
-
-        // call fusion algorithm EKF
-        this.fusionAlgorithm.onStepDetected(pdrValues[0], pdrValues[1], elevationVal, (android.os.SystemClock.uptimeMillis()));
-// 1) 注入EKF: fusionAlgorithm.onStepDetected(...);
-// 2) 读取融合后坐标
+        fusionAlgorithm.onStepDetected(pdrValues[0], pdrValues[1], elevationVal, SystemClock.uptimeMillis());
         double[] fusedState = fusionAlgorithm.getState();
         LatLng fusedCoordinate = CoordinateTransform.enuToGeodetic(
                 fusedState[1], fusedState[2], 0,
-                startRef[0], startRef[1], startRef[2]
-        );
+                startRef[0], startRef[1], startRef[2]);
         notifyFusedUpdate(fusedCoordinate);
     }
 
-    //-----------------------------
-    // 8) start/stop recording
-    //-----------------------------
+    // 8) Start/Stop Recording
     public void startRecording() {
-        // 保持屏幕
-        this.wakeLock.acquire(31 * 60 * 1000L);
-        this.saveRecording = true;
-        this.stepCounter = 0;
-        this.absoluteStartTime = System.currentTimeMillis();
-        this.bootTime = SystemClock.uptimeMillis();
-
-        // 生成Trajectory
-        this.trajectory = Traj.Trajectory.newBuilder()
+        wakeLock.acquire(31 * 60 * 1000L);
+        saveRecording = true;
+        stepCounter = 0;
+        absoluteStartTime = System.currentTimeMillis();
+        bootTime = SystemClock.uptimeMillis();
+        trajectory = Traj.Trajectory.newBuilder()
                 .setAndroidVersion(Build.VERSION.RELEASE)
                 .setStartTimestamp(absoluteStartTime);
-
-        // (★EKF集成处) 决定是否启用 EKF
         initialiseFusionAlgorithm();
-
-        // Timer 每10ms存一次数据
-        this.storeTrajectoryTimer = new Timer();
-        this.storeTrajectoryTimer.scheduleAtFixedRate(new storeDataInTrajectory(), 0, TIME_CONST);
-        this.pdrProcessing.resetPDR();
+        storeTrajectoryTimer = new Timer();
+        storeTrajectoryTimer.scheduleAtFixedRate(new storeDataInTrajectory(), 0, TIME_CONST);
+        pdrProcessing.resetPDR();
     }
 
     public void stopRecording() {
-        if (this.saveRecording) {
-            this.saveRecording = false;
+        if (saveRecording) {
+            saveRecording = false;
             storeTrajectoryTimer.cancel();
-            // 假如要关掉EKF:
             if (fusionAlgorithm != null) {
                 fusionAlgorithm.stopFusion();
             }
@@ -668,23 +614,22 @@ public class SensorFusion implements SensorEventListener, Observer {
             wakeLock.release();
         }
     }
+
     public List<SensorInfo> getSensorInfos() {
         List<SensorInfo> sensorInfoList = new ArrayList<>();
-        sensorInfoList.add(this.accelerometerSensor.sensorInfo);
-        sensorInfoList.add(this.barometerSensor.sensorInfo);
-        sensorInfoList.add(this.gyroscopeSensor.sensorInfo);
-        sensorInfoList.add(this.lightSensor.sensorInfo);
-        sensorInfoList.add(this.proximitySensor.sensorInfo);
-        sensorInfoList.add(this.magnetometerSensor.sensorInfo);
+        sensorInfoList.add(accelerometerSensor.sensorInfo);
+        sensorInfoList.add(barometerSensor.sensorInfo);
+        sensorInfoList.add(gyroscopeSensor.sensorInfo);
+        sensorInfoList.add(lightSensor.sensorInfo);
+        sensorInfoList.add(proximitySensor.sensorInfo);
+        sensorInfoList.add(magnetometerSensor.sensorInfo);
         return sensorInfoList;
     }
-    //-----------------------------
-    // 9) TimerTask 写数据
-    //-----------------------------
+
+    // 9) TimerTask for periodically saving sensor data into the trajectory object.
     private class storeDataInTrajectory extends TimerTask {
         @Override
         public void run() {
-            // IMU
             trajectory.addImuData(Traj.Motion_Sample.newBuilder()
                     .setRelativeTimestamp(SystemClock.uptimeMillis() - bootTime)
                     .setAccX(acceleration[0])
@@ -697,22 +642,18 @@ public class SensorFusion implements SensorEventListener, Observer {
                     .setRotationVectorY(rotation[1])
                     .setRotationVectorZ(rotation[2])
                     .setRotationVectorW(rotation[3])
-                    .setStepCount(stepCounter)
-            );
-
+                    .setStepCount(stepCounter));
             if (counter == 99) {
                 counter = 0;
-                // 记录气压光照
                 trajectory.addPressureData(Traj.Pressure_Sample.newBuilder()
                                 .setPressure(pressure)
-                                .setRelativeTimestamp(SystemClock.uptimeMillis()-bootTime))
+                                .setRelativeTimestamp(SystemClock.uptimeMillis() - bootTime))
                         .addLightData(Traj.Light_Sample.newBuilder()
                                 .setLight(light)
-                                .setRelativeTimestamp(SystemClock.uptimeMillis()-bootTime)
+                                .setRelativeTimestamp(SystemClock.uptimeMillis() - bootTime)
                                 .build());
                 if (secondCounter == 4) {
                     secondCounter = 0;
-                    // 记录 Wifi AP etc
                     Wifi currentWifi = wifiProcessor.getCurrentWifiData();
                     if (currentWifi != null) {
                         trajectory.addApsData(Traj.AP_Data.newBuilder()
@@ -728,24 +669,27 @@ public class SensorFusion implements SensorEventListener, Observer {
             }
         }
     }
-        public List<Wifi> getWifiList() {
+
+    public List<Wifi> getWifiList() {
         return this.wifiList;
     }
-    public void addTagFusionTrajectory(LatLng fusion_position){
-        if(saveRecording) {
+
+    public void addTagFusionTrajectory(LatLng fusion_position) {
+        if (saveRecording) {
             trajectory.addGnssData(Traj.GNSS_Sample.newBuilder()
                     .setAltitude(getElevation())
                     .setLatitude((float) fusion_position.latitude)
                     .setLongitude((float) fusion_position.longitude)
                     .setProvider("fusion")
-                    .setRelativeTimestamp(System.currentTimeMillis()-absoluteStartTime));
-
+                    .setRelativeTimestamp(System.currentTimeMillis() - absoluteStartTime));
             Toast.makeText(context, "Tag Successfully added.", Toast.LENGTH_SHORT).show();
         }
     }
-    public void setStartGNSSLatitude(float[] startPosition){
+
+    public void setStartGNSSLatitude(float[] startPosition) {
         this.startLocation = startPosition;
     }
+
     public Map<SensorTypes, float[]> getSensorValueMap() {
         Map<SensorTypes, float[]> sensorValueMap = new HashMap<>();
         sensorValueMap.put(SensorTypes.ACCELEROMETER, acceleration);
@@ -759,6 +703,7 @@ public class SensorFusion implements SensorEventListener, Observer {
         sensorValueMap.put(SensorTypes.PDR, pdrProcessing.getPDRMovement());
         return sensorValueMap;
     }
+
     public void resumeListening() {
         accelerometerSensor.sensorManager.registerListener(this, accelerometerSensor.sensor, 10000);
         accelerometerSensor.sensorManager.registerListener(this, linearAccelerationSensor.sensor, 10000);
@@ -773,13 +718,12 @@ public class SensorFusion implements SensorEventListener, Observer {
         wifiProcessor.startListening();
         gnssProcessor.startLocationUpdates();
     }
+
     public void registerForServerUpdate(Observer observer) {
         serverCommunications.registerObserver(observer);
     }
 
-    //-----------------------------
-    // 10) 发送数据到服务器
-    //-----------------------------
+    // 10) Sending data to the server
     public void sendTrajectoryToCloud() {
         Traj.Trajectory buildTraj = trajectory.build();
         serverCommunications.sendTrajectory(buildTraj);
@@ -788,12 +732,13 @@ public class SensorFusion implements SensorEventListener, Observer {
     public void sendWifiJsonToCloud(JSONObject fingerprint) {
         serverCommunications.sendWifi(fingerprint);
     }
-    public float passAverageStepLength(){
+
+    public float passAverageStepLength() {
         return pdrProcessing.getAverageStepLength();
     }
+
     public void stopListening() {
-        if(!saveRecording) {
-            // Unregister sensor-manager based devices
+        if (!saveRecording) {
             accelerometerSensor.sensorManager.unregisterListener(this);
             barometerSensor.sensorManager.unregisterListener(this);
             gyroscopeSensor.sensorManager.unregisterListener(this);
@@ -804,14 +749,11 @@ public class SensorFusion implements SensorEventListener, Observer {
             rotationSensor.sensorManager.unregisterListener(this);
             linearAccelerationSensor.sensorManager.unregisterListener(this);
             gravitySensor.sensorManager.unregisterListener(this);
-            //The app often crashes here because the scan receiver stops after it has found the list.
-            // It will only unregister one if there is to unregister
             try {
-                this.wifiProcessor.stopListening(); //error here?
+                this.wifiProcessor.stopListening();
             } catch (Exception e) {
                 System.err.println("Wifi resumed before existing");
             }
-            // Stop receiving location updates
             this.gnssProcessor.stopUpdating();
         }
     }
@@ -826,8 +768,9 @@ public class SensorFusion implements SensorEventListener, Observer {
         recordingUpdates.remove(observer);
     }
 
-
-    // 用于回调UI
+    /**
+     * SensorFusionUpdates is an interface for notifying UI components about sensor fusion updates.
+     */
     public interface SensorFusionUpdates {
         enum update_type {
             PDR_UPDATE,
@@ -842,6 +785,4 @@ public class SensorFusion implements SensorEventListener, Observer {
         default void onFusedUpdate(LatLng fusedPosition) {}
         default void onWifiUpdate(LatLng wifiPosition) {}
     }
-
 }
-

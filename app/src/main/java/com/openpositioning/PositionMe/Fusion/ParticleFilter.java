@@ -7,7 +7,12 @@ import com.openpositioning.PositionMe.sensors.SensorFusion;
 import java.util.Random;
 
 /**
- *  Particle Filter.
+ * ParticleFilter is a simple implementation of a particle filter for fusing sensor-based position estimates.
+ * It maintains an array of particles representing possible positions in the ENU coordinate system relative to a reference point obtained from SensorFusion.
+ * The filter initializes by converting the reference latitude, longitude, and altitude to ENU coordinates and then randomly dispersing a fixed number of particles around this reference using a Gaussian distribution.
+ * When a new position measurement (such as from GNSS or Wi-Fi) is received, the measurement is transformed into ENU coordinates and each particle is slightly nudged toward this measurement.
+ * The overall estimated position is then computed as the average of the particles’ positions, which is converted back to geographic coordinates for further processing.
+ * This minimal design does not implement advanced resampling or weight adjustments, but it provides a straightforward framework for fusing sensor data to estimate position.
  */
 public class ParticleFilter implements FusionAlgorithm {
 
@@ -33,13 +38,12 @@ public class ParticleFilter implements FusionAlgorithm {
      *  - initializes particles around that reference
      */
     public ParticleFilter() {
-        // 1) 取起始参考坐标
+        // 1) Initial Refference
         double[] startRef = SensorFusion.getInstance().getGNSSLatLngAlt(true);
         this.refLatitude  = startRef[0];
         this.refLongitude = startRef[1];
         this.refAltitude  = startRef[2];
 
-        // 2) 将起始点自己转换为 ENU (它应当变成近似 (0,0) ).
         double[] enuRef = CoordinateTransform.geodeticToEnu(
                 refLatitude, refLongitude, refAltitude,
                 refLatitude, refLongitude, refAltitude
@@ -47,11 +51,11 @@ public class ParticleFilter implements FusionAlgorithm {
         this.initialEasting  = enuRef[0];
         this.initialNorthing = enuRef[1];
 
-        // 3) 初始化粒子数组与随机数生成器
+
         this.particles = new Particle[NUM_PARTICLES];
         this.random = new Random();
 
-        // 4) 在初始位置附近随机撒一批粒子
+
         initializeParticles();
     }
 

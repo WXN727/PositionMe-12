@@ -320,7 +320,7 @@
                 android:id="@+id/pdrSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PDR"
+                android:text="Fusion"
                 android:textColor="@color/white"
                 android:layout_marginStart="12dp"/>
         </LinearLayout>
@@ -366,7 +366,7 @@
                 android:id="@+id/fusionSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Fusion"
+                android:text="PDR"
                 android:textColor="@color/white"
                 android:layout_marginStart="12dp"/>
         </LinearLayout>
